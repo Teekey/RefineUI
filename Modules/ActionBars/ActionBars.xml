@@ -1,0 +1,6 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+	<Script file="Status.lua"/>
+	<Script file="Cooldowns.lua"/>
+	<Script file="ExtraBar.lua"/>
+	<Script file="Test.lua"/>
+</Ui>

@@ -1,0 +1,17 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+    <Include file="Modules\ActionBars\ActionBars.xml"/>
+    <Include file="Modules\UnitFrames\UnitFrames.xml"/>
+    <Include file="Modules\Nameplates\!Nameplates.xml"/>
+    <Include file="Modules\Maps\Maps.xml"/>
+    <Include file="Modules\Auras\Auras.xml"/>
+    <Include file="Modules\Chat\!Chat.xml"/>
+    <Include file="Modules\Skins\!Skins.xml"/>
+    <Include file="Modules\Databar\!Databar.xml"/>
+    <Include file="Modules\Automation\!Automation.xml"/>
+    <Include file="Modules\Quests\!Quests.xml"/>
+    <Include file="Modules\Loot\!Loot.xml"/>
+    <Include file="Modules\Tooltip\!Tooltip.xml"/>
+    <Include file="Modules\Trade\!Trade.xml"/> 
+    <Include file="Modules\Misc\!Misc.xml"/>
+    <Include file="Modules\Blizzard\!Blizzard.xml"/>
+</Ui>

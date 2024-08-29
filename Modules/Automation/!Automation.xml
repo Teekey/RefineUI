@@ -1,0 +1,6 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+    <Script file="AutoRepair.lua"/>
+    <Script file="AutoSellJunk.lua"/>
+    <Script file="AutoItemBar.lua"/>
+    <Script file="CancelBadBuffs.lua"/>
+</Ui>

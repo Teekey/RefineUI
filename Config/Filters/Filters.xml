@@ -1,0 +1,7 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+    <Script file="ChannelingTicks.lua"/>
+    <Script file="Reminders.lua"/>
+    <Script file="Nameplates.lua"/>
+    <Script file="LootFilter.lua"/>
+    <Script file="AuraWatch.lua"/>
+</Ui>

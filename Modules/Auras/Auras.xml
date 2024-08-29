@@ -1,0 +1,6 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+    <Script file="BuffFrame.lua"/>
+    <Script file="AuraSource.lua"/>
+    <Script file="RaidBuffsReminder.lua"/>
+    <Script file="SelfBuffsReminder.lua"/>
+</Ui>

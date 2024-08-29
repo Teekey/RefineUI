@@ -1,0 +1,12 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+    <Script file="LibStub\LibStub.lua"/>
+    <Include file="CallbackHandler-1.0\CallbackHandler-1.0.xml"/>
+    <Include file="LibCustomGlow-1.0\LibCustomGlow-1.0.xml"/>
+    <Include file="oUF\oUF.xml"/>
+    <Script file="LibEasing\LibEasing.lua"/>
+    <Include file="AceTimer-3.0\AceTimer-3.0.xml"/>
+    <Include file="AceEvent-3.0\AceEvent-3.0.xml"/>
+    <!-- <Script file="LibRangeCheck-3.0\LibRangeCheck-3.0.lua"/> -->
+    <Script file="LibSharedMedia-3.0\LibSharedMedia-3.0.lua"/>
+    <Include file="TaintLess.xml"/>
+</Ui>

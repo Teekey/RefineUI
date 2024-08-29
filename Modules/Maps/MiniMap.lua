@@ -1,0 +1,390 @@
+local R, C, L = unpack(RefineUI)
+
+----------------------------------------------------------------------------------------
+-- Local functions
+----------------------------------------------------------------------------------------
+local function GetZoneColor()
+	local pvpType = C_PvP.GetZonePVPInfo()
+	if pvpType == "sanctuary" then
+		return 0.41, 0.8, 0.94
+	elseif pvpType == "arena" then
+		return 1.0, 0.1, 0.1
+	elseif pvpType == "friendly" then
+		return 0.1, 1.0, 0.1
+	elseif pvpType == "hostile" then
+		return 1.0, 0.1, 0.1
+	elseif pvpType == "contested" then
+		return 1.0, 0.7, 0.0
+	elseif pvpType == "combat" then
+		return 1.0, 0.1, 0.1
+	else
+		return 1.0, 0.9294, 0.7607
+	end
+end
+
+local function FadeOutWhoClicked(whoClickedText)
+	UIFrameFadeOut(whoClickedText, 1, whoClickedText:GetAlpha(), 0)
+end
+
+----------------------------------------------------------------------------------------
+--	Minimap border
+----------------------------------------------------------------------------------------
+local MinimapAnchor = CreateFrame("Frame", "MinimapAnchor", UIParent)
+MinimapAnchor:CreatePanel("Default", C.minimap.size, C.minimap.size, unpack(C.position.minimap))
+
+-- Disable Minimap Cluster
+MinimapCluster:EnableMouse(false)
+MinimapCluster:SetSize(300, 300)
+MinimapCluster.Selection:SetSize(300, 300)
+local frame = CreateFrame("Frame")
+frame:RegisterEvent("PLAYER_ENTERING_WORLD")
+frame:SetScript("OnEvent", function(self, event)
+	self:UnregisterEvent(event)
+	-- Parent Minimap into our frame
+	Minimap:SetParent(MinimapAnchor)
+	Minimap:ClearAllPoints()
+	Minimap:SetPoint("TOPLEFT", MinimapAnchor, "TOPLEFT", 3, -3)
+	Minimap:SetPoint("BOTTOMRIGHT", MinimapAnchor, "BOTTOMRIGHT", -3, 3)
+	Minimap:SetSize(MinimapAnchor:GetWidth(), MinimapAnchor:GetWidth())
+
+	MinimapBackdrop:ClearAllPoints()
+	MinimapBackdrop:SetPoint("TOPLEFT", MinimapAnchor, "TOPLEFT", 4, -4)
+	MinimapBackdrop:SetPoint("BOTTOMRIGHT", MinimapAnchor, "BOTTOMRIGHT", -4, 4)
+	MinimapBackdrop:SetSize(MinimapAnchor:GetWidth(), MinimapAnchor:GetWidth())
+
+	-- Instance Difficulty icon
+	MinimapCluster.InstanceDifficulty:SetParent(Minimap)
+	MinimapCluster.InstanceDifficulty:ClearAllPoints()
+	MinimapCluster.InstanceDifficulty:SetPoint("TOPLEFT", Minimap, "TOPLEFT", -1, 1)
+	MinimapCluster.InstanceDifficulty.Default.Border:Hide()
+	MinimapCluster.InstanceDifficulty.Default.Background:SetSize(36, 36)
+	MinimapCluster.InstanceDifficulty.Default.Background:SetVertexColor(0.6, 0.3, 0)
+
+	-- Guild Instance Difficulty icon
+	MinimapCluster.InstanceDifficulty.Guild.Border:Hide()
+	MinimapCluster.InstanceDifficulty.Guild.Background:SetSize(36, 36)
+	MinimapCluster.InstanceDifficulty.Guild.Background:ClearAllPoints()
+	MinimapCluster.InstanceDifficulty.Guild.Background:SetPoint("TOPLEFT", Minimap, "TOPLEFT", -1, 1)
+
+	-- Challenge Mode icon
+	MinimapCluster.InstanceDifficulty.ChallengeMode.Border:Hide()
+	MinimapCluster.InstanceDifficulty.ChallengeMode.Background:SetSize(36, 36)
+	MinimapCluster.InstanceDifficulty.ChallengeMode.Background:SetVertexColor(0.8, 0.8, 0)
+	MinimapCluster.InstanceDifficulty.ChallengeMode.Background:ClearAllPoints()
+	MinimapCluster.InstanceDifficulty.ChallengeMode.Background:SetPoint("TOPLEFT", Minimap, "TOPLEFT", -1, 1)
+
+	-- Move QueueStatus icon
+	QueueStatusFrame:SetClampedToScreen(true)
+	QueueStatusFrame:SetFrameStrata("TOOLTIP")
+	QueueStatusButton:ClearAllPoints()
+	QueueStatusButton:SetPoint("BOTTOMLEFT", Minimap, "BOTTOMLEFT", 2, 0)
+	QueueStatusButton:SetParent(Minimap)
+	QueueStatusButton:SetScale(0.75)
+
+	hooksecurefunc(QueueStatusButton, "SetPoint", function(self, _, anchor)
+		if anchor ~= Minimap then
+			self:ClearAllPoints()
+			self:SetPoint("BOTTOMLEFT", Minimap, "BOTTOMLEFT", 2, 0)
+		end
+	end)
+
+	hooksecurefunc(QueueStatusButton, "SetScale", function(self, scale)
+		if scale ~= 0.75 then
+			self:SetScale(0.75)
+		end
+	end)
+
+	-- Invites icon
+	local InviteTexture = GameTimeCalendarInvitesTexture
+	InviteTexture:ClearAllPoints()
+	InviteTexture:SetParent(Minimap)
+	InviteTexture:SetPoint("TOPRIGHT", Minimap, "TOPRIGHT", -1, -4)
+	GameTimeFrame:Hide()
+
+	-- Create button to show invite tooltip and allow open calendar
+	local button = CreateFrame("Button", nil, Minimap)
+	button:SetAllPoints(InviteTexture)
+	if not GameTimeCalendarInvitesTexture:IsShown() then
+		button:Hide()
+	end
+
+	button:SetScript("OnEnter", function()
+		if InCombatLockdown() then return end
+		if InviteTexture:IsShown() then
+			GameTooltip:SetOwner(button, "ANCHOR_LEFT")
+			GameTooltip:AddLine(GAMETIME_TOOLTIP_CALENDAR_INVITES)
+			GameTooltip:AddLine(" ")
+			GameTooltip:AddLine(GAMETIME_TOOLTIP_TOGGLE_CALENDAR)
+			GameTooltip:Show()
+		end
+	end)
+
+	button:SetScript("OnLeave", function()
+		GameTooltip:Hide()
+	end)
+
+	button:SetScript("OnClick", function()
+		if InCombatLockdown() then return end
+		if InviteTexture:IsShown() then
+			ToggleCalendar()
+		end
+	end)
+
+	hooksecurefunc(InviteTexture, "Show", function()
+		button:Show()
+	end)
+
+	hooksecurefunc(InviteTexture, "Hide", function()
+		button:Hide()
+	end)
+
+	-- Move Mail icon
+	local MailFrame = MinimapCluster.IndicatorFrame.MailFrame
+	hooksecurefunc(MailFrame, "SetPoint", function(self, _, anchor)
+		if anchor ~= Minimap then
+			self:ClearAllPoints()
+			self:SetPoint("BOTTOMRIGHT", Minimap, "BOTTOMRIGHT", -2, 4)
+		end
+	end)
+	MiniMapMailIcon:SetTexture("Interface\\AddOns\\TKUI\\Media\\Textures\\Mail")
+	MiniMapMailIcon:SetSize(20, 18)
+
+	-- Move crafting order icon
+	local Crafting = MinimapCluster.IndicatorFrame.CraftingOrderFrame
+	hooksecurefunc(Crafting, "SetPoint", function(self, _, anchor)
+		if anchor ~= Minimap then
+			self:ClearAllPoints()
+			self:SetPoint("BOTTOM", Minimap, "BOTTOM", 0, 4)
+		end
+	end)
+end)
+
+-- Adjusting for patch 9.0.1 Minimap.xml
+Minimap:SetFrameStrata("LOW")
+Minimap:SetFrameLevel(2)
+
+-- Hide Border
+MinimapCompassTexture:Hide()
+MinimapCluster.BorderTop:StripTextures()
+
+-- Hide Zoom Buttons
+Minimap.ZoomIn:Kill()
+Minimap.ZoomOut:Kill()
+
+-- Set up the addon's frame
+if C.minimap.zoomReset then
+	local resetZoom = CreateFrame("Frame")
+	local resetting = 0
+	Minimap:SetZoom(0)
+	resetZoom:RegisterEvent("MINIMAP_UPDATE_ZOOM")
+	resetZoom:RegisterEvent("PLAYER_ENTERING_WORLD")
+	resetZoom:SetScript("OnEvent", function(self, event)
+		if Minimap:GetZoom() > 0 then
+			if event == "PLAYER_ENTERING_WORLD" then
+				Minimap:SetZoom(0)
+			elseif resetting == 0 then
+				resetting = 1
+				C_Timer.After(C.minimap.resetTime, function()
+					Minimap:SetZoom(0)
+					resetting = 0
+				end)
+			end
+		end
+	end)
+end
+
+-- Hide Blob Ring
+Minimap:SetArchBlobRingScalar(0)
+Minimap:SetQuestBlobRingScalar(0)
+
+-- Hide Zone Frame
+MinimapCluster.ZoneTextButton:Hide()
+
+-- --  Frames need a position and size set in order to be visible (Size can also be set using multiple anchor points)
+-- local zoneTextFrame=CreateFrame("Frame", "MinimapZoneText", Minimap);--    Our frame
+-- zoneTextFrame:SetPoint("TOP", Minimap, "TOP", 0, -10)
+-- zoneTextFrame:SetSize(1,1);
+
+-- --  FontStrings only need a position set. By default, they size automatically according to the text shown.
+-- local zoneTextLabel = zoneTextFrame:CreateFontString("ZoneTextLabel", "OVERLAY")
+-- zoneTextLabel:SetFont(C.font.minimap_font, C.font.minimap_font_size, C.font.minimap_font_style)
+-- zoneTextLabel:SetPoint("CENTER");
+
+-- Minimap:SetScript("OnEnter", function(self)
+--     local zoneText = GetMinimapZoneText()
+--     if zoneText then
+--         zoneTextLabel:SetText(zoneText)
+--         zoneTextFrame:Show()
+--     end
+-- end)
+
+-- Minimap:SetScript("OnLeave", function(self)
+--     zoneTextFrame:Hide()
+-- end)
+
+AddonCompartmentFrame:Kill()
+
+-- Garrison icon
+ExpansionLandingPageMinimapButton:SetScale(0.0001)
+ExpansionLandingPageMinimapButton:SetAlpha(0)
+
+
+-- Feedback icon
+if FeedbackUIButton then
+	FeedbackUIButton:ClearAllPoints()
+	FeedbackUIButton:SetPoint("BOTTOM", Minimap, "BOTTOM", 0, 0)
+	FeedbackUIButton:SetScale(0.8)
+end
+
+-- Streaming icon
+if StreamingIcon then
+	StreamingIcon:ClearAllPoints()
+	StreamingIcon:SetPoint("BOTTOM", Minimap, "BOTTOM", 0, -10)
+	StreamingIcon:SetScale(0.8)
+	StreamingIcon:SetFrameStrata("BACKGROUND")
+end
+
+-- GhostFrame
+GhostFrame:StripTextures()
+GhostFrame:SetTemplate("Overlay")
+GhostFrame:StyleButton()
+GhostFrame:ClearAllPoints()
+GhostFrame:SetPoint(unpack(C.position.ghost))
+GhostFrameContentsFrameIcon:SetTexCoord(0.1, 0.9, 0.1, 0.9)
+GhostFrameContentsFrameIcon:SetSize(32, 32)
+GhostFrameContentsFrame:SetFrameLevel(GhostFrameContentsFrame:GetFrameLevel() + 2)
+GhostFrameContentsFrame:CreateBackdrop("Overlay")
+GhostFrameContentsFrame.backdrop:SetPoint("TOPLEFT", GhostFrameContentsFrameIcon, -2, 2)
+GhostFrameContentsFrame.backdrop:SetPoint("BOTTOMRIGHT", GhostFrameContentsFrameIcon, 2, -2)
+
+-- Enable mouse scrolling
+Minimap:EnableMouseWheel(true)
+Minimap:SetScript("OnMouseWheel", function(_, d)
+	if d > 0 then
+		_G.Minimap.ZoomIn:Click()
+	elseif d < 0 then
+		_G.Minimap.ZoomOut:Click()
+	end
+end)
+
+-- Hide Game Time
+MinimapAnchor:RegisterEvent("PLAYER_LOGIN")
+MinimapAnchor:RegisterEvent("ADDON_LOADED")
+MinimapAnchor:SetScript("OnEvent", function(_, _, addon)
+	if addon == "Blizzard_TimeManager" then
+		TimeManagerClockButton:Kill()
+	elseif addon == "Blizzard_HybridMinimap" then
+		HybridMinimap:SetFrameStrata("BACKGROUND")
+		HybridMinimap:SetFrameLevel(100)
+		HybridMinimap.MapCanvas:SetUseMaskTexture(false)
+		HybridMinimap.CircleMask:SetTexture("Interface\\BUTTONS\\WHITE8X8")
+		HybridMinimap.MapCanvas:SetUseMaskTexture(true)
+	end
+end)
+
+----------------------------------------------------------------------------------------
+--	Right click menu
+----------------------------------------------------------------------------------------
+
+Minimap:SetScript("OnMouseUp", function(self, button)
+	if button == "RightButton" then
+		MinimapCluster.Tracking.Button:OpenMenu()
+		MinimapCluster.Tracking.Button.menu:ClearAllPoints()
+		MinimapCluster.Tracking.Button.menu:SetPoint("TOPRIGHT", Minimap, "LEFT", -4, 0)
+	elseif button == "LeftButton" then
+		Minimap.OnClick(self)
+	end
+end)
+
+-- Set Square Map Mask
+Minimap:SetMaskTexture(C.media.blank)
+Minimap:SetArchBlobRingAlpha(0)
+Minimap:SetQuestBlobRingAlpha(0)
+
+-- For others mods with a minimap button, set minimap buttons position in square mode
+function GetMinimapShape() return "SQUARE" end
+
+----------------------------------------------------------------------------------------
+--	Hide minimap in combat
+----------------------------------------------------------------------------------------
+if C.minimap.hide_combat == true then
+	MinimapAnchor:RegisterEvent("PLAYER_REGEN_ENABLED")
+	MinimapAnchor:RegisterEvent("PLAYER_REGEN_DISABLED")
+	MinimapAnchor:HookScript("OnEvent", function(self, event)
+		if event == "PLAYER_REGEN_ENABLED" then
+			self:Show()
+		elseif event == "PLAYER_REGEN_DISABLED" then
+			if not R.FarmMode then
+				self:Hide()
+			end
+		end
+	end)
+end
+
+----------------------------------------------------------------------------------------
+--	Tracking Menu
+----------------------------------------------------------------------------------------
+MinimapCluster.Tracking.Background:Hide()
+MinimapCluster.Tracking.Button:SetAlpha(0)
+Minimap:SetScript("OnMouseUp", function(self, button)
+	if button == "RightButton" then
+		MinimapCluster.Tracking.Button:OpenMenu()
+		local menu = MinimapCluster.Tracking.Button.menu
+		if menu then
+			local cursorX, cursorY = GetCursorPosition()
+			local scale = UIParent:GetEffectiveScale()
+			menu:ClearAllPoints()
+			menu:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMLEFT", cursorX / scale, cursorY / scale)
+		end
+	elseif button == "LeftButton" then
+		Minimap.OnClick(self)
+	end
+end)
+
+----------------------------------------------------------------------------------------
+-- Show who clicked the minimap
+----------------------------------------------------------------------------------------
+local whoClickedFrame = CreateFrame("Frame", "TKUIWhoClickedFrame", Minimap)
+whoClickedFrame:SetPoint("BOTTOM", Minimap, "BOTTOM", 0, 0)
+whoClickedFrame:SetSize(1, 1)
+
+local whoClickedText = whoClickedFrame:CreateFontString(nil, "OVERLAY")
+whoClickedText:SetFont(C.media.normalFont, 16, "OUTLINE")
+whoClickedText:SetPoint("BOTTOM", Minimap, "BOTTOM", 0, 6)
+
+local function OnMinimapPing(self, event, unit)
+	local name = UnitName(unit)
+	local _, class = UnitClass(unit)
+	whoClickedText:SetFormattedText("(%s)", name)
+	whoClickedText:SetTextColor(unpack(R.oUF_colors.class[class]))
+	UIFrameFadeRemoveFrame(whoClickedText)
+	whoClickedText:SetAlpha(1)
+	whoClickedText:Show()
+	if whoClickedText.fadeTimer then whoClickedText.fadeTimer:Cancel() end
+	whoClickedText.fadeTimer = C_Timer.NewTimer(5, function() FadeOutWhoClicked(whoClickedText) end)
+end
+
+whoClickedFrame:RegisterEvent("MINIMAP_PING")
+whoClickedFrame:SetScript("OnEvent", OnMinimapPing)
+whoClickedText:Hide()
+
+
+----------------------------------------------------------------------------------------
+-- Zone Text on Mouseover
+----------------------------------------------------------------------------------------
+local zoneText = Minimap:CreateFontString(nil, "OVERLAY")
+zoneText:SetFont(C.media.normalFont, 16, "OUTLINE")
+zoneText:SetPoint("TOP", Minimap, "TOP", 0, -2)
+zoneText:Hide()
+
+Minimap:HookScript("OnEnter", function()
+	local zoneName = GetZoneText()
+	if zoneName and zoneName ~= "" then
+		local r, g, b = GetZoneColor()
+		zoneText:SetText(zoneName)
+		zoneText:SetTextColor(r, g, b)
+		zoneText:Show()
+	end
+end)
+
+Minimap:HookScript("OnLeave", function() zoneText:Hide() end)
