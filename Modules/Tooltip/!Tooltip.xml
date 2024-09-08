@@ -1,7 +1,7 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/">
 	<Script file="Tooltip.lua"/>
 	<Script file="HyperLink.lua"/>
-	<Script file="ItemIcons.lua"/>
+	<Script file="TooltipIcons.lua"/>
 	<Script file="ItemLevel.lua"/>
 	<Script file="MountSource.lua"/>
 	<Script file="SpellID.lua"/>

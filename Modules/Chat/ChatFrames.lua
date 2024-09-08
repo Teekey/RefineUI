@@ -67,10 +67,10 @@ local function SetChatStyle(frame)
 	_G[chat .. "EditBox"]:ClearAllPoints()
 	_G[chat .. "EditBox"]:SetPoint("BOTTOMLEFT", ChatFrame1, "TOPLEFT", -10, 23)
 	_G[chat .. "EditBox"]:SetPoint("BOTTOMRIGHT", ChatFrame1, "TOPRIGHT", 11, 23)
-	_G[chat .. "EditBox"]:SetFont(C.font.chat_font, fontSize, C.font.chat_font_style)
+	_G[chat .. "EditBox"]:SetFont(C.font.chat[1], fontSize, C.font.chat[3])
 	for i = 1, NUM_CHAT_WINDOWS do
 		local frame = _G[("ChatFrame%d"):format(i)]
-		frame.editBox.header:SetFont(C.font.chat_font, fontSize + 2, C.font.chat_font_style)
+		frame.editBox.header:SetFont(C.font.chat[1], fontSize + 2, C.font.chat[3])
 	end
 	-- Hide textures
 	for j = 1, #CHAT_FRAME_TEXTURES do
@@ -158,6 +158,7 @@ local function SetChatStyle(frame)
 	end
 
 	frame.skinned = true
+
 end
 
 -- Setup chatframes 1 to 10 on login
@@ -196,7 +197,7 @@ local function SetupChatPosAndFont()
 		end
 
 		-- Font and font style for chat
-		chat:SetFont(C.font.chat_font, fontSize, C.font.chat_font_style)
+		chat:SetFont(C.font.chat[1], fontSize, C.font.chat[3])
 		chat:SetShadowOffset(C.font.chat_font_shadow and 1 or 0, C.font.chat_font_shadow and -1 or 0)
 
 		-- Force chat position
@@ -206,6 +207,7 @@ local function SetupChatPosAndFont()
 			chat:SetPoint(C.position.chat[1], C.position.chat[2], C.position.chat[3], C.position.chat[4],
 				C.position.chat[5])
 			FCF_SavePositionAndDimensions(chat)
+			ChatFrame1.Selection:SetAllPoints(chat)
 		elseif i == 2 then
 			if C.chat.combatlog ~= true then
 				FCF_DockFrame(chat)
@@ -216,6 +218,8 @@ local function SetupChatPosAndFont()
 				FCF_DockUpdate()
 			end
 		end
+
+
 
 		chat:SetScript("OnMouseWheel", FloatingChatFrame_OnMouseScroll)
 	end
@@ -229,15 +233,15 @@ local function SetupChatPosAndFont()
 	QuickJoinToastButton.Toast:ClearAllPoints()
 	QuickJoinToastButton.Toast:SetPoint(unpack(C.position.bnPopup))
 	QuickJoinToastButton.Toast.Background:SetTexture("")
-	QuickJoinToastButton.Toast:CreateBackdrop("Transparent")
-	QuickJoinToastButton.Toast.backdrop:SetPoint("TOPLEFT", 0, 0)
-	QuickJoinToastButton.Toast.backdrop:SetPoint("BOTTOMRIGHT", 0, 0)
-	QuickJoinToastButton.Toast.backdrop:Hide()
+	-- QuickJoinToastButton.Toast:CreateBackdrop("Transparent")
+	-- QuickJoinToastButton.Toast.backdrop:SetPoint("TOPLEFT", 0, 0)
+	-- QuickJoinToastButton.Toast.backdrop:SetPoint("BOTTOMRIGHT", 0, 0)
+	-- QuickJoinToastButton.Toast.backdrop:Hide()
 	QuickJoinToastButton.Toast:SetWidth(C.chat.width + 7)
 	QuickJoinToastButton.Toast.Text:SetWidth(C.chat.width - 20)
 
-	hooksecurefunc(QuickJoinToastButton, "ShowToast", function() QuickJoinToastButton.Toast.backdrop:Show() end)
-	hooksecurefunc(QuickJoinToastButton, "HideToast", function() QuickJoinToastButton.Toast.backdrop:Hide() end)
+	-- hooksecurefunc(QuickJoinToastButton, "ShowToast", function() QuickJoinToastButton.Toast.backdrop:Show() end)
+	-- hooksecurefunc(QuickJoinToastButton, "HideToast", function() QuickJoinToastButton.Toast.backdrop:Hide() end)
 
 	-- Reposition Battle.net popup
 	BNToastFrame:ClearAllPoints()
@@ -471,14 +475,14 @@ local function GetColoredName_hook(event, _, arg2, ...)
 	end
 end
 _G.GetColoredName = GetColoredName_hook
-----------------------------------------------------------------------------------------
---	Prevent reposition ChatFrame
-----------------------------------------------------------------------------------------
-hooksecurefunc(ChatFrame1, "SetPoint", function(self, _, _, _, x)
-	if x ~= C.position.chat[4] then
-		self:ClearAllPoints()
-		self:SetSize(C.chat.width, C.chat.height)
-		self:SetPoint(C.position.chat[1], C.position.chat[2], C.position.chat[3], C.position.chat[4],
-			C.position.chat[5])
-	end
-end)
+-- ----------------------------------------------------------------------------------------
+-- --	Prevent reposition ChatFrame
+-- ----------------------------------------------------------------------------------------
+-- hooksecurefunc(ChatFrame1, "SetPoint", function(self, _, _, _, x)
+-- 	if x ~= C.position.chat[4] then
+-- 		self:ClearAllPoints()
+-- 		self:SetSize(C.chat.width, C.chat.height)
+-- 		self:SetPoint(C.position.chat[1], C.position.chat[2], C.position.chat[3], C.position.chat[4],
+-- 			C.position.chat[5])
+-- 	end
+-- end)

@@ -18,7 +18,7 @@
 	<Script file="Elements\Health.lua"/>
 	<Script file="Elements\LeaderIndicator.lua"/>
 	<Script file="Elements\PhaseIndicator.lua"/>
-	<Script file="Elements\Portraits.lua"/>
+	<Script file="Elements\portrait.lua"/>
 	<Script file="Elements\Power.lua"/>
 	<Script file="Elements\PowerPrediction.lua"/>
 	<Script file="Elements\QuestIndicator.lua"/>
@@ -49,6 +49,7 @@
 	<Script file="Modules\Smooth.lua"/>
 	<Script file="Modules\SoulShards.lua"/>
 	<Script file="Modules\Experience.lua"/>
+	<Script file="Modules\DynamicPortrait.lua"/>
 	<!-- MT/MTT/MTTT Template -->
 	<Button name="oUF_MainTank" inherits="SecureUnitButtonTemplate" virtual="true">
 		<Frames>

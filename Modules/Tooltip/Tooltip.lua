@@ -17,55 +17,31 @@ else
     anchor:SetPoint("BOTTOM", Minimap, "TOP")
 end
 
+local function GameTooltipDefault(tooltip, parent)
+	if C.tooltip.cursor == true then
+		tooltip:SetOwner(parent, "ANCHOR_CURSOR_RIGHT", 10, 10)
+	else
+		tooltip:SetOwner(parent, "ANCHOR_NONE")
+		tooltip:ClearAllPoints()
+		tooltip:SetPoint("BOTTOMRIGHT", TooltipAnchor, "BOTTOMRIGHT", 0, 0)
+		tooltip.default = 1
+	end
+	if InCombatLockdown() and C.tooltip.hide_combat and not IsShiftKeyDown() then
+		tooltip:Hide()
+	end
+end
+hooksecurefunc("GameTooltip_SetDefaultAnchor", GameTooltipDefault)
+
+
 -- Hide PVP text
 PVP_ENABLED = ""
 
 -- Statusbar
 GameTooltipStatusBar:SetStatusBarTexture(C.media.texture)
-GameTooltipStatusBar:SetHeight(4)
 GameTooltipStatusBar:ClearAllPoints()
-GameTooltipStatusBar:SetPoint("TOPLEFT", GameTooltip, "BOTTOMLEFT", 2, 6)
-GameTooltipStatusBar:SetPoint("TOPRIGHT", GameTooltip, "BOTTOMRIGHT", -2, 6)
-
--- Raid icon
-local ricon = GameTooltip:CreateTexture("GameTooltipRaidIcon", "OVERLAY")
-ricon:SetHeight(18)
-ricon:SetWidth(18)
-ricon:SetPoint("BOTTOM", GameTooltip, "TOP", 0, 5)
-
-GameTooltip:HookScript("OnHide", function() ricon:SetTexture(nil) end)
-
--- Add "Targeted By" line
-local targetedList = {}
-local ClassColors = {}
-local token
-for class, color in next, RAID_CLASS_COLORS do
-	ClassColors[class] = ("|cff%.2x%.2x%.2x"):format(color.r * 255, color.g * 255, color.b * 255)
-end
-
-local function AddTargetedBy()
-	local numParty, numRaid = GetNumSubgroupMembers(), GetNumGroupMembers()
-	if numParty > 0 or numRaid > 0 then
-		for i = 1, (numRaid > 0 and numRaid or numParty) do
-			local unit = (numRaid > 0 and "raid" .. i or "party" .. i)
-			if UnitIsUnit(unit .. "target", token) and not UnitIsUnit(unit, "player") then
-				local _, class = UnitClass(unit)
-				targetedList[#targetedList + 1] = ClassColors[class]
-				targetedList[#targetedList + 1] = UnitName(unit)
-				targetedList[#targetedList + 1] = "|r, "
-			end
-		end
-		if #targetedList > 0 then
-			targetedList[#targetedList] = nil
-			GameTooltip:AddLine(" ", nil, nil, nil, 1)
-			local line = _G["GameTooltipTextLeft" .. GameTooltip:NumLines()]
-			if not line then return end
-			line:SetFormattedText(L_TOOLTIP_WHO_TARGET .. " (|cffffffff%d|r): %s", (#targetedList + 1) / 3,
-				table.concat(targetedList))
-			wipe(targetedList)
-		end
-	end
-end
+GameTooltipStatusBar:SetPoint("BOTTOMLEFT", GameTooltip, "BOTTOMLEFT", 4, 4)
+GameTooltipStatusBar:SetPoint("BOTTOMRIGHT", GameTooltip, "BOTTOMRIGHT", -4, 4)
+GameTooltipStatusBar:SetHeight(4) -- Adjust this value to make the bar shorter or taller
 
 ----------------------------------------------------------------------------------------
 --	Unit tooltip styling
@@ -96,40 +72,6 @@ local function GetColor(unit)
 	return r, g, b
 end
 
-local function GameTooltipDefault(tooltip, parent)
-	if C.tooltip.cursor == true then
-		tooltip:SetOwner(parent, "ANCHOR_CURSOR_RIGHT", 10, 10)
-	else
-		tooltip:SetOwner(parent, "ANCHOR_NONE")
-		tooltip:ClearAllPoints()
-		tooltip:SetPoint("BOTTOMRIGHT", TooltipAnchor, "BOTTOMRIGHT", 0, 0)
-		tooltip.default = 1
-	end
-	if InCombatLockdown() and C.tooltip.hide_combat and not IsShiftKeyDown() then
-		tooltip:Hide()
-	end
-end
-hooksecurefunc("GameTooltip_SetDefaultAnchor", GameTooltipDefault)
-
-if C.tooltip.shift_modifer == true then
-	GameTooltip:SetScript("OnShow", function(self)
-		if IsShiftKeyDown() then
-			self:Show()
-		else
-			if not HoverBind.enabled then
-				self:Hide()
-			end
-		end
-	end)
-end
-
-
--- Adjust the size and position of the status bar
-GameTooltipStatusBar:ClearAllPoints()
-GameTooltipStatusBar:SetPoint("BOTTOMLEFT", GameTooltip, "BOTTOMLEFT", 4, 4)
-GameTooltipStatusBar:SetPoint("BOTTOMRIGHT", GameTooltip, "BOTTOMRIGHT", -4, 4)
-GameTooltipStatusBar:SetHeight(4) -- Adjust this value to make the bar shorter or taller
-
 GameTooltipStatusBar:SetScript("OnValueChanged", function(self, value)
 	if not value then return end
 	local min, max = self:GetMinMaxValues()
@@ -151,13 +93,21 @@ end)
 
 
 local OnTooltipSetUnit = function(self)
-	if self ~= GameTooltip or self:IsForbidden() then return end
-	local lines = self:NumLines()
-	local unit = (select(2, self:GetUnit())) or
-		(GetMouseFoci() and GetMouseFoci().GetAttribute and GetMouseFoci():GetAttribute("unit")) or
-		(UnitExists("mouseover") and "mouseover") or nil
+    if self ~= GameTooltip or self:IsForbidden() then return end
+    
+    -- Add error checking for tooltip data
+    local tooltipData = self:GetTooltipData()
+    if not tooltipData or not tooltipData.lines then
+        -- If tooltip data is missing, exit the function
+        return
+    end
+    
+    local lines = #tooltipData.lines
+    local unit = (select(2, self:GetUnit())) or
+        (GetMouseFoci() and GetMouseFoci().GetAttribute and GetMouseFoci():GetAttribute("unit")) or
+        (UnitExists("mouseover") and "mouseover") or nil
 
-	if not unit then return end
+    if not unit then return end
 
 	local name, realm = UnitName(unit)
 	local race, englishRace = UnitRace(unit)
@@ -251,39 +201,6 @@ local OnTooltipSetUnit = function(self)
 			end
 		end
 	end
-
-	if C.tooltip.target == true and UnitExists(unit .. "target") then
-		local r, g, b = GetColor(unit .. "target")
-		local text = ""
-
-		if UnitIsEnemy("player", unit .. "target") then
-			r, g, b = unpack(R.oUF_colors.reaction[1])
-		elseif not UnitIsFriend("player", unit .. "target") then
-			r, g, b = unpack(R.oUF_colors.reaction[4])
-		end
-
-		if UnitName(unit .. "target") == UnitName("player") then
-			text = "|cfffed100" .. STATUS_TEXT_TARGET .. ":|r " .. "|cffff0000> " .. UNIT_YOU .. " <|r"
-		else
-			text = "|cfffed100" .. STATUS_TEXT_TARGET .. ":|r " .. UnitName(unit .. "target")
-		end
-
-		self:AddLine(text, r, g, b)
-	end
-
-	if C.tooltip.raid_icon == true then
-		local raidIndex = GetRaidTargetIndex(unit)
-		if raidIndex then
-			ricon:SetTexture("Interface\\TargetingFrame\\UI-RaidTargetingIcon_" .. raidIndex)
-		else
-			ricon:SetTexture(nil)
-		end
-	end
-
-	if C.tooltip.who_targetting == true then
-		token = unit
-		AddTargetedBy()
-	end
 end
 
 TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Unit, OnTooltipSetUnit)
@@ -293,7 +210,7 @@ TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Unit, OnTooltipSetU
 ----------------------------------------------------------------------------------------
 
 local CombatHideActionButtonsTooltip = function(self)
-	if not IsShiftKeyDown() and (InCombatLockdown()) then
+	if (InCombatLockdown()) then
 		self:Hide()
 	end
 end

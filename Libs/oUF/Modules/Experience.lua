@@ -95,8 +95,24 @@ local function playerIsMaxHonorLevel()
 	return not C_PvP.GetNextHonorLevelForReward(UnitHonorLevel('player'))
 end
 
+local function getTrackedReputation()
+    local watchedFactionData = C_Reputation.GetWatchedFactionData()
+    if watchedFactionData then
+        return watchedFactionData.name, watchedFactionData.factionID
+    end
+    return nil, nil
+end
+
 local function shouldShowHonor()
-	return playerIsMaxLevel() and (IsWatchingHonorAsXP() or C_PvP.IsActiveBattlefield() or IsInActiveWorldPVP())
+    if playerIsMaxLevel() then
+        local trackedRep = getTrackedReputation()
+        if trackedRep then
+            return false -- Show reputation instead
+        else
+            return IsWatchingHonorAsXP() or C_PvP.IsActiveBattlefield() or IsInActiveWorldPVP()
+        end
+    end
+    return false
 end
 
 --[[ Tags:header
@@ -138,29 +154,50 @@ for tag, func in next, {
 end
 
 local function getValues()
-	local isHonor = shouldShowHonor()
-	local cur = (isHonor and UnitHonor or UnitXP)('player')
-	local max = (isHonor and UnitHonorMax or UnitXPMax)('player')
-	local level = (isHonor and UnitHonorLevel or UnitLevel)('player')
-	local rested = not isHonor and (GetXPExhaustion() or 0) or 0
-
-	local perc = math.floor(cur / max * 100 + 0.5)
-	local restedPerc = math.floor(rested / max * 100 + 0.5)
-
-	return cur, max, perc, rested, restedPerc, level, isHonor
+    local isHonor = shouldShowHonor()
+    local watchedFactionData = C_Reputation.GetWatchedFactionData()
+    
+    if playerIsMaxLevel() and watchedFactionData then
+        local cur = watchedFactionData.currentStanding - watchedFactionData.currentReactionThreshold
+        local max = watchedFactionData.nextReactionThreshold - watchedFactionData.currentReactionThreshold
+        local perc = max > 0 and math.floor(cur / max * 100 + 0.5) or 0
+        return cur, max, perc, 0, 0, watchedFactionData.reaction, false, watchedFactionData.name
+    elseif isHonor then
+        local cur = UnitHonor('player')
+        local max = UnitHonorMax('player')
+        local level = UnitHonorLevel('player')
+        local perc = math.floor(cur / max * 100 + 0.5)
+        return cur, max, perc, 0, 0, level, true
+    else
+        local cur = UnitXP('player')
+        local max = UnitXPMax('player')
+        local level = UnitLevel('player')
+        local rested = GetXPExhaustion() or 0
+        local perc = math.floor(cur / max * 100 + 0.5)
+        local restedPerc = math.floor(rested / max * 100 + 0.5)
+        return cur, max, perc, rested, restedPerc, level, false
+    end
 end
 
 local function UpdateTooltip(element)
-	local cur, max, perc, rested, restedPerc, level, isHonor = getValues()
+    local cur, max, perc, rested, restedPerc, level, isHonor, repName = getValues()
 
-	GameTooltip:SetText(isHonor and HONOR_LEVEL_LABEL:format(level) or COMBAT_XP_GAIN)
-	GameTooltip:AddLine(string.format('%s / %s (%d%%)', BreakUpLargeNumbers(cur), BreakUpLargeNumbers(max), perc), 1, 1, 1)
+    if repName then
+        GameTooltip:SetText(repName)
+        GameTooltip:AddLine(string.format('%s / %s (%d%%)', BreakUpLargeNumbers(cur), BreakUpLargeNumbers(max), perc), 1, 1, 1)
+        -- Optionally, you can add more reputation-specific information here
+    elseif isHonor then
+        GameTooltip:SetText(HONOR_LEVEL_LABEL:format(level))
+        GameTooltip:AddLine(string.format('%s / %s (%d%%)', BreakUpLargeNumbers(cur), BreakUpLargeNumbers(max), perc), 1, 1, 1)
+    else
+        GameTooltip:SetText(COMBAT_XP_GAIN)
+        GameTooltip:AddLine(string.format('%s / %s (%d%%)', BreakUpLargeNumbers(cur), BreakUpLargeNumbers(max), perc), 1, 1, 1)
+        if rested > 0 then
+            GameTooltip:AddLine(string.format('%s: %s (%d%%)', TUTORIAL_TITLE26, BreakUpLargeNumbers(rested), restedPerc), 1, 1, 1)
+        end
+    end
 
-	if rested > 0 then
-		GameTooltip:AddLine(string.format('%s: %s (%d%%)', TUTORIAL_TITLE26, BreakUpLargeNumbers(rested), restedPerc), 1, 1, 1)
-	end
-
-	GameTooltip:Show()
+    GameTooltip:Show()
 end
 
 local function OnEnter(element)
@@ -223,13 +260,20 @@ local function Update(self, event, unit)
 		element:PreUpdate(unit)
 	end
 
-	local cur, max, _, rested, _, level, isHonor = getValues()
-	if element.SetAnimatedValues then
-		element:SetAnimatedValues(cur, 0, max, level)
-	else
-		element:SetMinMaxValues(0, max)
-		element:SetValue(cur)
-	end
+    local cur, max, _, rested, _, level, isHonor, repName = getValues()
+    if element.SetAnimatedValues then
+        element:SetAnimatedValues(cur, 0, max, level)
+    else
+        element:SetMinMaxValues(0, max)
+        element:SetValue(cur)
+    end
+
+    if repName then
+        -- Set color for reputation bar (you can customize this)
+        element:SetStatusBarColor(0, 0.5, 1)
+    else
+        (element.OverrideUpdateColor or UpdateColor)(element, isHonor, rested > 0)
+    end
 
 	if element.Rested then
 		element.Rested:SetMinMaxValues(0, max)
@@ -312,20 +356,22 @@ local function ElementDisable(self)
 end
 
 local function Visibility(self, event, unit)
-	local shouldEnable
-	if not UnitHasVehicleUI('player') then
-		if not playerIsMaxLevel() and not IsXPUserDisabled() then
-			shouldEnable = true
-		elseif shouldShowHonor() and not playerIsMaxHonorLevel() then
-			shouldEnable = true
-		end
-	end
+    local shouldEnable
+    if not UnitHasVehicleUI('player') then
+        if not playerIsMaxLevel() and not IsXPUserDisabled() then
+            shouldEnable = true
+        elseif shouldShowHonor() and not playerIsMaxHonorLevel() then
+            shouldEnable = true
+        elseif playerIsMaxLevel() and getTrackedReputation() then
+            shouldEnable = true
+        end
+    end
 
-	if shouldEnable then
-		ElementEnable(self)
-	else
-		ElementDisable(self)
-	end
+    if shouldEnable then
+        ElementEnable(self)
+    else
+        ElementDisable(self)
+    end
 end
 
 local function VisibilityPath(self, ...)
@@ -359,6 +405,7 @@ local function Enable(self, unit)
 		self:RegisterEvent('DISABLE_XP_GAIN', VisibilityPath, true)
 		self:RegisterEvent('ENABLE_XP_GAIN', VisibilityPath, true)
 		self:RegisterEvent('UPDATE_EXPANSION_LEVEL', VisibilityPath, true)
+		self:RegisterEvent('UPDATE_FACTION', VisibilityPath, true)
 
 		hooksecurefunc('SetWatchingHonorAsXP', function()
 			if self:IsElementEnabled('Experience') then

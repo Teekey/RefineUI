@@ -46,6 +46,19 @@ _G["OverrideActionBarMicroBGL"]:Hide()
 _G["OverrideActionBarExpBar"]:SetAlpha(0)
 _G["OverrideActionBarExpBar"]:Hide()
 
+_G["OverrideActionBarHealthBar"]:Hide()
+_G["OverrideActionBarHealthBar"]:SetAlpha(0)
+_G["OverrideActionBarPowerBar"]:Hide()
+_G["OverrideActionBarPowerBar"]:SetAlpha(0)
+
+_G["OverrideActionBarLeaveFrameExitBG"]:Hide()
+_G["OverrideActionBarLeaveFrameExitBG"]:SetAlpha(0)
+
+_G["OverrideActionBarDivider2"]:SetAlpha(0)
+_G["OverrideActionBarDivider2"]:Hide()
+_G["OverrideActionBarLeaveFrameDivider3"]:SetAlpha(0)
+_G["OverrideActionBarLeaveFrameDivider3"]:Hide()
+
 _G["OverrideActionBarButtonBGL"]:SetAlpha(0)
 _G["OverrideActionBarButtonBGL"]:Hide()
 _G["OverrideActionBarButtonBGMid"]:SetAlpha(0)
@@ -58,6 +71,8 @@ _G["OverrideActionBarBG"]:Hide()
 _G["OverrideActionBarBorder"]:Hide()
 _G["OverrideActionBarMicroBGR"]:Hide()
 _G["OverrideActionBarMicroBGMid"]:Hide()
+
+_G["OverrideActionBarLeaveFrameLeaveButton"]:SetTemplate("Transparent")
 
 ----------------------------------------------------------------------------------------
 --	Prevent micromenu from moving in vehicles

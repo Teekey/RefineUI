@@ -18,7 +18,7 @@ local function CreatePartyFrame(self)
     UF.CreateHealthBar(self)
     UF.CreatePowerBar(self)
     UF.CreateNameText(self)
-    UF.CreateRaidDebuffs(self)
+    -- UF.CreateRaidDebuffs(self)
     UF.CreateRaidTargetIndicator(self)
     UF.CreateDebuffHighlight(self)
 	UF.CreatePartyAuraWatch(self)
@@ -54,31 +54,31 @@ oUF:Factory(function(self)
         "yOffset",  R.PixelPerfect(-52),
         "point", "TOP"
     )
-    party:SetPoint("CENTER", _G["PartyAnchor"])
-    _G["PartyAnchor"]:SetSize(C.group.partyWidth, C.group.partyHealthHeight * 5 + 7 * 4)
+    party:SetPoint("CENTER", _G["RefineUI_Party"])
+    _G["RefineUI_Party"]:SetSize(C.group.partyWidth, C.group.partyHealthHeight * 5 + 7 * 4)
     R.PixelSnap(party)
 end)
 
 -- Create anchors
-local party = CreateFrame("Frame", "PartyAnchor", UIParent)
+local party = CreateFrame("Frame", "RefineUI_Party", UIParent)
 party:SetPoint(unpack(C.position.unitframes.party))
 R.PixelSnap(party)
 
-local partyHolder = _G["RefineUF_Party"] -- Adjust this to match your party frame holder name
-if not partyHolder then return end
+-- local partyHolder = _G["RefineUI_Party"] -- Adjust this to match your party frame holder name
+-- if not partyHolder then return end
 
 local frameWidth = C.group.partyWidth
 local frameHeight = C.group.partyHealthHeight + C.group.partyPowerHeight
 local spacing = C.group.spacing or 5 -- Adjust spacing as needed
 
 for i = 1, 5 do -- Assuming max 5 party members
-    local frame = _G["RefineUF_Party"..i]
+    local frame = _G["RefineUI_Party"..i]
     if frame then
         frame:ClearAllPoints()
         if i == 1 then
-            frame:SetPoint("TOPLEFT", partyHolder, "TOPLEFT", 0, 0)
+            frame:SetPoint("TOPLEFT", party, "TOPLEFT", 0, 0)
         else
-            local previousFrame = _G["RefineUF_Party"..(i-1)]
+            local previousFrame = _G["RefineUI_Party"..(i-1)]
             frame:SetPoint("TOP", previousFrame, "BOTTOM", 0, -spacing)
         end
         

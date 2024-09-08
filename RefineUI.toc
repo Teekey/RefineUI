@@ -6,7 +6,7 @@
 ## SavedVariables: RefineUISettings, RefineUIBindings, RefineUICurrency, RefineUIPositions, RefineUIChatHistoryDB
 ## SavedVariablesPerCharacter: RefineUICharDB
 ## X-oUF: RefineUI_oUF
-## IconTexture: Interface\AddOns\RefineUI\Media\Textures\Logo.tga
+## IconTexture: Interface\AddOns\RefineUI\Media\Textures\Logo.blp
 ## X-Credits: Wetxius, Shestak, AcidWeb, Aezay, Affli, Ailae, Allez, ALZA, Ammo, Astromech, Beoko, Bitbyte, Blamdarot, Bozo, Caellian, Califpornia, Camealion, Chiril, CrusaderHeimdall, Cybey, Dawn, Dencer, Don Kaban, Dridzt, Duffed, Durcyn, Eclipse, Egingell, Elv22, Evilpaul, Evl, Favorit, Fernir, Foof, Freebaser, g0st, Gethe, Gorlasch, Gsuz, Haleth, Haste, Hoochie, Hungtar, Hydra, HyPeRnIcS, Ildyria, iSpawnAtHome, Jaslm, Kanegasi, Karl_w_w, Karudon, Katae, Kellett, Kemayo, Killakhan, Kraftman, Leatrix, m2jest1c, Magdain, Monolit, MrRuben5, Nathanyel, Nefarion, Nightcracker, Nils Ruesch, p3lim, Partha, Phanx, Renstrom, RustamIrzaev, Safturento, Sanex, Sara.Festung, SDPhantom, Semlar, Sildor, Silverwind, SinaC, siweia, Slakah, Soeters, Starlon, Suicidal Katt, Syzgyn, Tekkub, Telroth, Thalyra, Thizzelle, Tia Lynn, Tohveli, Tukz, Tuller, Urtgard, Veev, Villiv, Wetxius, Woffle of Dark Iron, Wrug, Xuerian, Yleaf, Zork
 
 

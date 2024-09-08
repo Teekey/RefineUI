@@ -93,7 +93,7 @@ local function Shared(self, unit)
 	end
 
 	-- Names
-	self.Info = T.SetFontString(self.Health, C.font.group_name_font, C.font.group_name_size, C.font.group_name_style)
+	self.Info = T.SetFontString(self.Health, unpack(C.font.group.name))
 	self.Info:SetWordWrap(false)
 	if (suffix == "pet" or suffix == "target") and unit ~= "tank" then
 		self.Info:SetPoint("LEFT", self.Health, "LEFT", 0, 0)
@@ -112,7 +112,7 @@ local function Shared(self, unit)
 	self:Tag(self.Info, "[GetNameColor][NameShort]")
 
 	if not (suffix == "pet" or (suffix == "target" and unit ~= "tank")) then
-		self.Health.value = T.SetFontString(self.Health, C.font.unit_frames_health_font, C.font.unit_frames_health_font_size, C.font.unit_frames_health_font_style)
+		self.Health.value = T.SetFontString(self.Health, unpack(C.font.unitframes.health))
 		self.Health.value:SetPoint("CENTER", self.Health, "CENTER", 0, 0)
 		self.Health.value:SetTextColor(1, 1, 1)
 
@@ -260,12 +260,12 @@ local function Shared(self, unit)
 		self.RaidDebuffs.icon:SetPoint("BOTTOMRIGHT", -2, 2)
 
 		if C.raidframe.plugins_aura_watch_timer == true then
-			self.RaidDebuffs.time = T.SetFontString(self.RaidDebuffs, C.font.unit_frames_font, C.font.unit_frames_font_size, C.font.unit_frames_font_style)
+			self.RaidDebuffs.time = T.SetFontString(self.RaidDebuffs, unpack(C.font.unitframes.default))
 			self.RaidDebuffs.time:SetPoint("CENTER", 1, 1)
 			self.RaidDebuffs.time:SetTextColor(1, 1, 1)
 		end
 
-		self.RaidDebuffs.count = T.SetFontString(self.RaidDebuffs, C.font.unit_frames_font, C.font.unit_frames_font_size, C.font.unit_frames_font_style)
+		self.RaidDebuffs.count = T.SetFontString(self.RaidDebuffs, unpack(C.font.unitframes.default))
 		self.RaidDebuffs.count:SetPoint("BOTTOMRIGHT", self.RaidDebuffs, "BOTTOMRIGHT", 3, -1)
 		self.RaidDebuffs.count:SetTextColor(1, 1, 1)
 

@@ -155,10 +155,8 @@ function NP.CreateHealthBar(self)
 
     -- Health Text
     self.Health.value = self.Health:CreateFontString(nil, "OVERLAY")
-    self.Health.value:SetFont(C.font.nameplates_health_font, C.font.nameplates_health_font_size,
-        C.font.nameplates_health_font_style)
-    self.Health.value:SetShadowOffset(C.font.nameplates_health_font_shadow and 1 or 0,
-        C.font.nameplates_health_font_shadow and -1 or 0)
+    self.Health.value:SetFont(unpack(C.font.nameplates.health))
+    self.Health.value:SetShadowOffset(1, -1)
     self.Health.value:SetPoint("CENTER", self.Health, "CENTER", 0, -1)
     self:Tag(self.Health.value, "[NameplateHealth]")
 
@@ -211,8 +209,8 @@ end
 ----------------------------------------------------------------------------------------
 function NP.CreateNameText(self)
     self.Name = self:CreateFontString(nil, "OVERLAY")
-    self.Name:SetFont(C.font.nameplates_name_font, C.font.nameplates_name_font_size, C.font.nameplates_name_font_style)
-    self.Name:SetShadowOffset(C.font.nameplates_font_shadow and 1 or 0, C.font.nameplates_font_shadow and -1 or 0)
+    self.Name:SetFont(unpack(C.font.nameplates.name))
+    self.Name:SetShadowOffset(1, -1)
     self.Name:SetPoint("BOTTOMLEFT", self, "TOPLEFT", -4 * R.noscalemult, -2 * R.noscalemult)
     self.Name:SetPoint("BOTTOMRIGHT", self, "TOPRIGHT", 4 * R.noscalemult, -2 * R.noscalemult)
     self.Name:SetWordWrap(false)
@@ -221,10 +219,8 @@ function NP.CreateNameText(self)
 
 
     self.Title = self:CreateFontString(nil, "OVERLAY")
-    self.Title:SetFont(C.font.nameplates_name_font, (C.font.nameplates_name_font_size - 2),
-        C.font.nameplates_name_font_style)
-    self.Title:SetShadowOffset(C.font.nameplates_name_font_shadow and 1 or 0,
-        C.font.nameplates_name_font_shadow and -1 or 0)
+    self.Title:SetFont(unpack(C.font.nameplates.title))
+    self.Title:SetShadowOffset(1, -1)
     self.Title:SetPoint("TOP", self.Name, "BOTTOM", 0, 0)
     self.Title:SetWordWrap(false)
     self.Title:SetJustifyH("CENTER")       -- Center the text horizontally
@@ -273,10 +269,8 @@ function NP.CreateCastBar(self)
     -- Cast Name Text
     self.Castbar.Text = self.Castbar:CreateFontString(nil, "OVERLAY")
     self.Castbar.Text:SetPoint("CENTER", self.Castbar, "CENTER", 0, 0)
-    self.Castbar.Text:SetFont(C.font.nameplates_spell_font, C.font.nameplates_spell_size,
-        C.font.nameplates_spell_style)
-    self.Castbar.Text:SetShadowOffset(C.font.nameplates_spell_shadow and 1 or 0,
-        C.font.nameplates_spell_shadow and -1 or 0)
+    self.Castbar.Text:SetFont(unpack(C.font.nameplates.spell))
+    self.Castbar.Text:SetShadowOffset(1, -1)
     self.Castbar.Text:SetHeight(C.font.nameplates_spell_size)
     self.Castbar.Text:SetJustifyH("LEFT")
 
@@ -306,10 +300,8 @@ function NP.CreateCastBar(self)
     self.Castbar.Time = self.Castbar.IconCooldown:CreateFontString(nil, "OVERLAY")
     self.Castbar.Time:SetPoint("CENTER", self.Castbar.IconCooldown, "CENTER", 0, 0)
     self.Castbar.Time:SetJustifyH("CENTER")
-    self.Castbar.Time:SetFont(C.font.nameplates_spelltime_font, C.font.nameplates_spelltime_size,
-        C.font.nameplates_spelltime_style)
-    self.Castbar.Time:SetShadowOffset(C.font.nameplates_spelltime_shadow and 1 or 0,
-        C.font.nameplates_spelltime_shadow and -1 or 0)
+    self.Castbar.Time:SetFont(unpack(C.font.nameplates.spelltime))
+    self.Castbar.Time:SetShadowOffset(1, -1)
 
     self.Castbar.CustomTimeText = function(self, duration)
         self.Time:SetText(duration > 600 and "∞" or ("%.1f"):format(self.channeling and duration or self.max - duration))
@@ -393,20 +385,18 @@ end
 ----------------------------------------------------------------------------------------
 function NP.CreateQuestIcon(self)
     self.QuestIcon = self:CreateTexture(nil, "OVERLAY", nil, 7)
-    self.QuestIcon:SetSize((C.font.nameplates_name_font_size * 2), (C.font.nameplates_name_font_size * 2))
+    self.QuestIcon:SetSize((C.font.nameplates.name[2] * 2), (C.font.nameplates.name[2] * 2))
     self.QuestIcon:SetPoint("BOTTOM", self.Name, "TOP", 0, 2)
     self.QuestIcon:Hide()
 
     self.QuestIcon.Text = self:CreateFontString(nil, "OVERLAY")
     self.QuestIcon.Text:SetPoint("CENTER", self.QuestIcon, "CENTER", .5, 0)
     self.QuestIcon.Text:SetJustifyH("CENTER")
-    self.QuestIcon.Text:SetFont(C.font.nameplates_font, 6,
-        C.font.nameplates_font_style)
-    self.QuestIcon.Text:SetShadowOffset(C.font.nameplates_font_shadow and 1 or 0,
-        C.font.nameplates_font_shadow and -1 or 0)
+    self.QuestIcon.Text:SetFont(unpack(C.font.nameplates.quest))
+    self.QuestIcon.Text:SetShadowOffset(1, -1)
 
     self.QuestIcon.Item = self:CreateTexture(nil, "OVERLAY")
-    self.QuestIcon.Item:SetSize((C.font.nameplates_name_font_size * 1.5), (C.font.nameplates_name_font_size * 1.5))
+    self.QuestIcon.Item:SetSize((C.font.nameplates.name[2] * 1.5), (C.font.nameplates.name[2] * 1.5))
     self.QuestIcon.Item:SetPoint("BOTTOM", self.Name, "TOP", 0, 2)
     self.QuestIcon.Item:SetTexCoord(0.1, 0.9, 0.1, 0.9)
 end

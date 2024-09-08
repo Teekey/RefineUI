@@ -44,7 +44,7 @@ local function LoadSkin()
 
     -- frame.ResizeButton:HookScript("OnEnter", function()
     -- 	for i = 1, #lines do
-    -- 		lines[i]:SetVertexColor(unpack(C.media.classborder_color))
+    -- 		lines[i]:SetVertexColor(unpack(C.media.classBorderColor))
     -- 	end
     -- end)
 

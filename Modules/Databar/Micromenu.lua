@@ -446,31 +446,61 @@ end);
 -- hook the layout function to properly position our button and adjust others
 hooksecurefunc(MicroMenuContainer, "Layout", function(self)
     if FriendsMicroButton then
-        -- Position FriendsMicroButton
-        FriendsMicroButton:ClearAllPoints();
-        FriendsMicroButton:SetPoint("TOPLEFT", GuildMicroButton, "TOPRIGHT", -2, 0);
-
-        -- Adjust positions of subsequent buttons
-        local buttonsToMove = {
-            LFDMicroButton,
-            CollectionsMicroButton,
-            EJMicroButton,
-            StoreMicroButton,
-            MainMenuMicroButton
-        };
-
-        for i, button in ipairs(buttonsToMove) do
-            if button then
-                button:ClearAllPoints();
-                if i == 1 then
-                    button:SetPoint("TOPLEFT", FriendsMicroButton, "TOPRIGHT", -2, 0);
-                else
-                    button:SetPoint("TOPLEFT", buttonsToMove[i-1], "TOPRIGHT", -2, 0);
-                end
+        -- Recalculate the width of the MicroMenuContainer
+        local containerWidth = 0
+        local buttonSpacing = -2  -- Adjust this value if needed
+        
+        for _, buttonName in ipairs(MICRO_BUTTONS) do
+            local button = _G[buttonName]
+            if button and button:IsShown() then
+                containerWidth = containerWidth + button:GetWidth() + buttonSpacing
+            end
+        end
+        
+        -- Set the new width of the MicroMenuContainer
+        self:SetWidth(containerWidth - buttonSpacing)  -- Subtract the last spacing
+        
+        -- Align the first button to the left of the container
+        local firstButton = _G[MICRO_BUTTONS[1]]
+        if firstButton then
+            firstButton:ClearAllPoints()
+            firstButton:SetPoint("TOPLEFT", self, "TOPLEFT", 0, 0)
+        end
+        
+        -- Position all buttons
+        for i = 2, #MICRO_BUTTONS do
+            local button = _G[MICRO_BUTTONS[i]]
+            local prevButton = _G[MICRO_BUTTONS[i-1]]
+            if button and prevButton then
+                button:ClearAllPoints()
+                button:SetPoint("TOPLEFT", prevButton, "TOPRIGHT", buttonSpacing, 0)
             end
         end
     end
-end);
+end)
+
+-- License: Public Domain
+
+-- Function to hide talent alerts
+local function HideAlert(microButton)
+    -- Only hide alerts for the PlayerSpellsMicroButton
+    if microButton == PlayerSpellsMicroButton then
+        MainMenuMicroButton_HideAlert(microButton)
+    end
+end
+
+-- Function to stop pulse animations on the talent button
+local function HidePulse(microButton)
+    -- Only stop pulse for the PlayerSpellsMicroButton
+    if microButton == PlayerSpellsMicroButton then
+        MicroButtonPulseStop(microButton)
+    end
+end
+
+-- Hook the alert and pulse functions securely to avoid taint
+hooksecurefunc("MainMenuMicroButton_ShowAlert", HideAlert)
+hooksecurefunc("MicroButtonPulse", HidePulse)
+
 
 -- Initialize the button
 FriendsMicroButton = InitializeFriendsMicroButton()

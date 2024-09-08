@@ -19,15 +19,16 @@ local frameHeight = (BUTTON_SIZE + BUTTON_SPACING) - BUTTON_SPACING
 ----------------------------------------------------------------------------------------
 --	Frame Creation
 ----------------------------------------------------------------------------------------
--- Create a parent frame for mouseover functionality
+
+-- Create a frame to hold our consumable buttons
+local ConsumableButtonsFrame = CreateFrame("Frame", "RefineUI_AutoItemBar", UIParent, "BackdropTemplate")
+ConsumableButtonsFrame:SetPoint(unpack(C.position.autoitembar))
+ConsumableButtonsFrame:SetSize(frameWidth, frameHeight)
+
 local ConsumableBarParent = CreateFrame("Frame", "ConsumableBarParent", UIParent)
 ConsumableBarParent:SetPoint(unpack(C.position.autoitembar))
 ConsumableBarParent:SetSize(frameWidth, frameHeight + 10) -- Add some extra height for mouseover area
-
--- Create a frame to hold our consumable buttons
-local ConsumableButtonsFrame = CreateFrame("Frame", "ConsumableButtonsFrame", ConsumableBarParent, "BackdropTemplate")
-ConsumableButtonsFrame:SetPoint("BOTTOM", ConsumableBarParent, "BOTTOM", 0, 0)
-ConsumableButtonsFrame:SetSize(frameWidth, frameHeight)
+ConsumableBarParent:SetFrameLevel(ConsumableButtonsFrame:GetFrameLevel() + 1)
 
 ----------------------------------------------------------------------------------------
 --	Local Variables
@@ -101,8 +102,8 @@ local function createConsumableButton(itemID, index)
     button.t:SetTexture(C_Item.GetItemIconByID(itemID))
 
     button.count = button:CreateFontString(nil, "OVERLAY")
-    button.count:SetFont(C.font.action_bars_font, C.font.action_bars_font_size, C.font.action_bars_font_style)
-    button.count:SetShadowOffset(C.font.cooldown_timers_font_shadow and 1 or 0, C.font.cooldown_timers_font_shadow and -1 or 0)
+    button.count:SetFont(unpack(C.font.actionBars))
+    button.count:SetShadowOffset(1, -1)
     button.count:SetPoint("BOTTOMRIGHT", -1, 3)
     button.count:SetJustifyH("RIGHT")
 

@@ -15,6 +15,7 @@ local function CreatePlayerFrame(self)
     -- Create frame elements
     UF.CreateHealthBar(self)
     UF.CreatePowerBar(self)
+    UF.CreatePortraitAndCastIcon(self)
     UF.CreateCastBar(self)
     UF.CreateClassResources(self)
     UF.CreateDebuffs(self)

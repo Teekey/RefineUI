@@ -14,7 +14,7 @@ end
 --	Initialization and Setup
 ----------------------------------------------------------------------------------------
 
-local anchor = CreateFrame("Frame", "BWTimelineAnchor", UIParent)
+local anchor = CreateFrame("Frame", "RefineUI_BWTimeline", UIParent)
 anchor:SetSize(C.bwtimeline.bar_width + C.bwtimeline.icons_width, C.bwtimeline.bar_length)
 anchor:SetPoint(unpack(C.position.bwtimeline))
 
@@ -122,7 +122,7 @@ function BWT:updateTimelineBar()
                 t.text:SetPoint(a2, t, a1)
                 t.text:SetTextColor(unpack(C.bwtimeline.bar_tick_text_color))
 
-                t.text:SetFont(C.font.bwt_tick_font, C.bwtimeline.bar_tick_text_font_size, C.font.bwt_tick_font_style)
+                t.text:SetFont(unpack(C.font.bwt.tick))
                 t.text:SetText(i * C.bwtimeline.bar_tick_spacing)
             else
                 t.text:Hide()
@@ -165,7 +165,7 @@ function BWT:updateFrameParameters(frame)
 
     if C.bwtimeline.icons_name then
         frame.nameText:Show()
-        frame.nameText:SetFont(C.font.bwt_font, C.font.bwt_font_size, C.font.bwt_font_style)
+        frame.nameText:SetFont(unpack(C.font.bwt.default))
         frame.nameText:ClearAllPoints()
         local a1, a2 = unpack(dirToAnchors[C.bwtimeline.icons_name_position])
         frame.nameText:SetPoint(a2, frame, a1)
@@ -184,7 +184,7 @@ function BWT:updateFrameParameters(frame)
 
     if C.bwtimeline.icons_duration then
         frame.durationText:Show()
-        frame.durationText:SetFont(C.font.bwt_duration_font, C.font.bwt_duration_size, C.font.bwt_duration_style)
+        frame.durationText:SetFont(unpack(C.font.bwt.duration))
         local a1, a2 = unpack(dirToAnchors[C.bwtimeline.icons_duration_position])
         frame.durationText:SetPoint(a2, frame, a1)
         frame.durationText:SetTextColor(unpack(C.bwtimeline.icons_duration_color))

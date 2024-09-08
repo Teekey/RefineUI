@@ -36,8 +36,8 @@ the unit.
     self.Portrait = Portrait
 --]]
 
-local R, C, L = unpack(RefineUI)
-local oUF = R.oUF
+local _, ns = ...
+local oUF = ns.oUF
 
 local function Update(self, event, unit)
 	if(not unit or not UnitIsUnit(self.unit, unit)) then return end

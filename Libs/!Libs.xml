@@ -8,5 +8,7 @@
     <Include file="AceEvent-3.0\AceEvent-3.0.xml"/>
     <!-- <Script file="LibRangeCheck-3.0\LibRangeCheck-3.0.lua"/> -->
     <Script file="LibSharedMedia-3.0\LibSharedMedia-3.0.lua"/>
+    <Include file="LibEditMode\embed.xml"/>
+    <Include file="LibEditModeOverride\LibEditModeOverride.xml"/>
     <Include file="TaintLess.xml"/>
 </Ui>

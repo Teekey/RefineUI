@@ -107,7 +107,7 @@ function oUF:DisableBlizzard(unit)
 	if(unit == 'player') then
 		-- handleFrame(PlayerFrame)
 		handleFrame(PlayerCastingBarFrame)
-		PlayerFrame:SetAlpha(0)
+		handleFrame(PlayerFrame)
 	elseif(unit == 'pet') then
 		handleFrame(PetFrame)
 	elseif(unit == 'target') then

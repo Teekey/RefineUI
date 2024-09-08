@@ -211,8 +211,8 @@ local function getFontString()
         fontString:SetParent(fontStringFrame)
     end
 
-    fontString:SetFont(C.font.sct_font, 15, C.font.sct_font_style)
-    fontString:SetShadowOffset(C.font.sct_font_shadow and 1 or 0, C.font.sct_font_shadow and -1 or 0)
+    fontString:SetFont(unpack(C.font.sct))
+    fontString:SetShadowOffset(1, -1)
     fontString:SetAlpha(1)
     fontString:SetDrawLayer("BACKGROUND")
     fontString:SetText("")
@@ -268,8 +268,8 @@ local function recycleFontString(fontString)
         fontString.icon.guid = nil
     end
 
-    fontString:SetFont(C.font.sct_font, 15, C.font.sct_font_style)
-    fontString:SetShadowOffset(C.font.sct_font_shadow and 1 or 0, C.font.sct_font_shadow and -1 or 0)
+    fontString:SetFont(unpack(C.font.sct))
+    fontString:SetShadowOffset(1, -1)
     fontString:ClearAllPoints()
 
     table.insert(fontStringCache, fontString)
@@ -697,8 +697,8 @@ function TKUI_SCT:DisplayText(guid, text, size, animation, spellId, pow, spellNa
     fontString.scttext = text
     fontString:SetText(text)
 
-    fontString:SetFont(C.font.sct_font, size, C.font.sct_font_style)
-    fontString:SetShadowOffset(C.font.sct_font_shadow and 1 or 0, C.font.sct_font_shadow and -1 or 0)
+    fontString:SetFont(unpack(C.font.sct))
+    fontString:SetShadowOffset(1, -1)
     fontString.startHeight = math_max(fontString:GetStringHeight(), 5)
     fontString.pow = pow
 

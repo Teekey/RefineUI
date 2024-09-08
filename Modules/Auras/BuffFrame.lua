@@ -30,9 +30,9 @@ end
 ----------------------------------------------------------------------------------------
 --	Buff Frame Anchor
 ----------------------------------------------------------------------------------------
-local BuffsAnchor = CreateFrame("Frame", "BuffsAnchor", UIParent)
+local BuffsAnchor = CreateFrame("Frame", "RefineUI_Buffs", UIParent)
 BuffsAnchor:SetPoint(unpack(C.position.playerBuffs))
-BuffsAnchor:SetSize((15 * C.aura.playerBuffSize) + 42, (C.aura.playerBuffSize * 2) + 3)
+BuffsAnchor:SetSize((16 * C.aura.playerBuffSize) + 42, (C.aura.playerBuffSize * 2) + 3)
 
 ----------------------------------------------------------------------------------------
 --	Aura Update Functions
@@ -185,6 +185,8 @@ hooksecurefunc(BuffFrame.AuraContainer, "UpdateGridLayout", function(self, auras
     end
 end)
 
+BuffFrame.Selection:SetAllPoints(BuffsAnchor)
+DebuffFrame:Hide()
 ----------------------------------------------------------------------------------------
 --	Hide Default UI Elements
 ----------------------------------------------------------------------------------------

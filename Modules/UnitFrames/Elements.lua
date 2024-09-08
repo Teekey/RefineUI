@@ -98,10 +98,8 @@ function UF.CreateHealthBar(self)
     self.Health.bg:SetTexture("Interface\\AddOns\\RefineUI\\Media\\Textures\\HealthBG")
     self.Health.bg.multiplier = 0.5
 
-    self.Health.value = R.SetFontString(self.Health, C.font.unit_frames_health_font,
-        C.font.unit_frames_health_font_size, C.font.unit_frames_health_font_style)
-    self.Health.value:SetShadowOffset(C.font.unit_frames_health_font_shadow and 1 or 0,
-        C.font.unit_frames_health_font_shadow and -1 or 0)
+    self.Health.value = R.SetFontString(self.Health, unpack(C.font.unitframes.health))
+    self.Health.value:SetShadowOffset(1, -1)
 
     self.Health.value:SetPoint("CENTER", self.Health, "CENTER", 0, -2)
     self.Health.value:SetJustifyH("CENTER")
@@ -137,8 +135,7 @@ function UF.CreatePowerBar(self)
     self.Power.bg:SetTexture(C.media.texture)
     self.Power.bg.multiplier = 0.4
 
-    self.Power.value = R.SetFontString(self.Health, C.font.unit_frames_health_font,
-        C.font.unit_frames_health_font_size, C.font.unit_frames_health_font_style)
+    self.Power.value = R.SetFontString(self.Health, unpack(C.font.unitframes.health))
     self.Power.value:SetPoint("CENTER", self.Power, "CENTER", 0, 0)
     self.Power.value:SetJustifyH("CENTER")
 end
@@ -148,11 +145,9 @@ end
 ----------------------------------------------------------------------------------------
 function UF.CreateNameText(self)
     if self.isPartyRaid then
-        self.Name = R.SetFontString(self.Health, C.font.unit_frames_name_font, C.font.unit_frames_name_font_size - 4,
-            C.font.unit_frames_name_font_style)
+        self.Name = R.SetFontString(self.Health, unpack(C.font.unitframes.name))
     elseif self.isSingleUnit then
-        self.Name = R.SetFontString(self.Health, C.font.unit_frames_name_font, C.font.unit_frames_name_font_size,
-            C.font.unit_frames_name_font_style)
+        self.Name = R.SetFontString(self.Health, unpack(C.font.unitframes.name))
     end
     self.Name:SetWordWrap(false)
     self.Name:SetPoint("BOTTOM", self.Health, "TOP", 0, 0)
@@ -186,10 +181,8 @@ function UF.CreateCastBar(self)
         self.Castbar.SafeZone:SetVertexColor(0.85, 0.27, 0.27)
     end
 
-    self.Castbar.Text = R.SetFontString(self.Castbar, C.font.unit_frames_spell_font, C.font.unit_frames_spell_font_size,
-        C.font.unit_frames_spell_font_style)
-    self.Castbar.Text:SetShadowOffset(C.font.unit_frames_spell_font_shadow and 1 or 0,
-        C.font.unit_frames_spell_font_shadow and -1 or 0)
+    self.Castbar.Text = R.SetFontString(self.Castbar, unpack(C.font.unitframes.spellname))
+    self.Castbar.Text:SetShadowOffset(1, -1)
     self.Castbar.Text:SetPoint("CENTER", self.Castbar, "CENTER", 0, -1)
     self.Castbar.Text:SetTextColor(1, 1, 1)
     self.Castbar.Text:SetJustifyH("CENTER")
@@ -221,8 +214,7 @@ function UF.CreateCastBar(self)
     self.Castbar.Button.Cooldown:SetReverse(false)
     self.Castbar.Button.Cooldown:SetFrameLevel(self.Castbar.Button:GetFrameLevel() + 1)
 
-    self.Castbar.Time = R.SetFontString(self.Castbar.Button.Cooldown, C.font.unit_frames_casttime_font,
-        C.font.unit_frames_casttime_font_size, C.font.unit_frames_casttime_font_style)
+    self.Castbar.Time = R.SetFontString(self.Castbar.Button.Cooldown, unpack(C.font.unitframes.spelltime))
     self.Castbar.Time:SetPoint("CENTER", self.Castbar.Button.Cooldown, "CENTER", 0, 0)
     self.Castbar.Time:SetTextColor(1, 1, 1)
     self.Castbar.Time:SetJustifyH("CENTER")
@@ -661,8 +653,7 @@ function UF.CreateInfo(self)
     self.FlashInfo:SetFrameLevel(self.Health:GetFrameLevel() + 1)
     self.FlashInfo:SetAllPoints(self.Health)
 
-    self.FlashInfo.ManaLevel = R.SetFontString(self.FlashInfo, C.font.unit_frames_font,
-        C.font.unit_frames_font_size, C.font.unit_frames_font_style)
+    self.FlashInfo.ManaLevel = R.SetFontString(self.FlashInfo, unpack(C.font.unitframes.default))
     self.FlashInfo.ManaLevel:SetPoint("CENTER", self.Power, "CENTER", 0, 1)
 
     -- Combat icon
@@ -679,8 +670,7 @@ function UF.CreateInfo(self)
         self.RestingIndicator:SetPoint("BOTTOMLEFT", self, "BOTTOMLEFT", -8, -8)
     end
 
-    self.Status = R.SetFontString(self.Health, C.font.unit_frames_font, C.font.unit_frames_font_size,
-        C.font.unit_frames_font_style)
+    self.Status = R.SetFontString(self.Health, unpack(C.font.unitframes.default))
     self.Status:SetPoint("CENTER", self.Power, "CENTER", 0, 1)
     self.Status:SetTextColor(0.69, 0.31, 0.31)
     self.Status:Hide()

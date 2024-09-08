@@ -3,4 +3,5 @@
     <Script file="AuraSource.lua"/>
     <Script file="RaidBuffsReminder.lua"/>
     <Script file="SelfBuffsReminder.lua"/>
+    <Script file="Filger.lua"/>
 </Ui>

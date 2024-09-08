@@ -9,7 +9,7 @@ local function SkinIt(bar)
 		if region:GetObjectType() == "Texture" then
 			region:SetTexture(nil)
 		elseif region:GetObjectType() == "FontString" then
-			region:SetFont(C.media.pixel_font, C.media.pixel_font_size, C.media.pixel_font_style)
+			region:SetFont(C.media.normalFont, 14, "OUTLINE")
 			region:SetShadowOffset(0, 0)
 		end
 	end

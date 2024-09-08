@@ -27,3 +27,5 @@ function R.CreateRaidFrame(self)
         R.CreateRaidDebuffs(self)
     end
 end
+
+CompactRaidFrameContainer.Selection:Hide()

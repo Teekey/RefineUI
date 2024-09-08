@@ -213,7 +213,6 @@ tooltip.average_lvl = false    -- Average items level
 tooltip.show_shift = true      -- Show items level and spec when Shift is pushed
 tooltip.raid_icon = false      -- Raid icon
 tooltip.unit_role = false      -- Unit role in tooltip
-tooltip.who_targetting = false -- Show who is targetting the unit (in raid or party)
 tooltip.mount = true           -- Show source of mount
 
 ----------------------------------------------------------------------------------------
@@ -225,7 +224,7 @@ minimap.enable = true                  -- Enable minimap
 minimap.onTop = false                   -- Move minimap on top right corner
 minimap.trackingIcon = true             -- Tracking icon
 minimap.garrisonIcon = false            -- Covenant icon
-minimap.size = 300                     -- Minimap size
+minimap.size = 294                     -- Minimap size
 minimap.addonButtonSize = 28           -- Minimap Addon Button size
 minimap.hideCombat = false              -- Hide minimap in combat
 minimap.toggleMenu = false              -- Show toggle menu
@@ -335,8 +334,8 @@ nameplate.aurasSize = 14                               -- Auras size
 nameplate.auraTimer = true                             -- Show cooldown timer on aura icons
 nameplate.healerIcon = false                           -- Show icon above enemy healers nameplate in battlegrounds
 nameplate.totemIcons = false                           -- Show icon above enemy totems nameplate
-nameplate.targetGlow = false                            -- Show glow texture for target
-nameplate.targetIndicator = false                       -- Show target arrows for target
+nameplate.targetGlow = true                            -- Show glow texture for target
+nameplate.targetIndicator = true                       -- Show target arrows for target
 nameplate.onlyName = true                              -- Show only name for friendly units
 nameplate.quests = true                               -- Show quest icon
 nameplate.lowHealth = false                            -- Show red border when low health
@@ -378,6 +377,34 @@ automation.autoWhisperInvite = false    -- Auto invite when whisper keyword
 automation.inviteKeyword = "inv +"      -- List of keyword (separated by space)
 automation.autoRepair = true            -- Auto repair
 automation.autoGuildRepair = true       -- Auto repair with guild funds first (if able)
+
+----------------------------------------------------------------------------------------
+-- Filger options
+----------------------------------------------------------------------------------------
+local filger = CreateSection("filger")
+
+filger.enable = true           -- Enable Filger
+filger.show_tooltip = false    -- Show tooltip
+filger.expiration = true       -- Sort cooldowns by expiration time
+-- Elements
+filger.show_buff = true        -- Player buffs
+filger.show_proc = true        -- Player procs
+filger.show_debuff = false     -- Debuffs on target
+filger.show_aura_bar = false   -- Aura bars on target
+filger.show_special = true     -- Special buffs on player
+filger.show_pvp_player = false -- PvP debuffs on player
+filger.show_pvp_target = false -- PvP auras on target
+filger.show_cd = true         -- Cooldowns
+-- Icons size
+filger.buffs_size = 48         -- Buffs size
+filger.buffs_space = 3         -- Buffs space
+filger.pvp_size = 60           -- PvP auras size
+filger.pvp_space = 3           -- PvP auras space
+filger.cooldown_size = 30      -- Cooldowns size
+filger.cooldown_space = 3      -- Cooldowns space
+-- Testing
+filger.test_mode = false       -- Test icon mode
+filger.max_test_icon = 5       -- Number of icons in test mode
 
 ----------------------------------------------------------------------------------------
 -- Scrolling Combat Text options

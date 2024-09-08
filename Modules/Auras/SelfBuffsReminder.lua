@@ -31,8 +31,15 @@ end
 local function CheckBuffs(self, group)
     local buffMissing = true
     for _, spell in ipairs(group.spells) do
-        local name = spell[1]
-        if AuraUtil.FindAuraByName(name, "player") then
+        local name, _, spellID = unpack(spell)
+        if group.mainhand or group.offhand then
+            -- Check for weapon enchants
+            local enchantID = GetWeaponEnchantInfo()
+            if (group.mainhand and enchantID) or (group.offhand and select(5, GetWeaponEnchantInfo())) then
+                buffMissing = false
+                break
+            end
+        elseif AuraUtil.FindAuraByName(name, "player") then
             buffMissing = false
             break
         end
@@ -64,10 +71,20 @@ end
 ----------------------------------------------------------------------------------------
 -- Frame Creation and Setup
 ----------------------------------------------------------------------------------------
+-- Create the primary frame
+local primaryFrame = CreateFrame("Frame", "RefineUI_SelfBuffsReminder", UIParent)
+primaryFrame:SetPoint(unpack(C.position.selfBuffs))
+primaryFrame:SetFrameLevel(5)
+
+-- Calculate total width based on number of buffs and their size
+local totalWidth = #tab * C.reminder.soloBuffsSize + (#tab - 1) * 5  -- 5 pixel spacing between icons
+primaryFrame:SetSize(totalWidth, C.reminder.soloBuffsSize)
+
+-- Create individual buff frames
 for i, group in ipairs(tab) do
-    local frame = CreateFrame("Frame", "ReminderFrame"..i, UIParent)
+    local frame = CreateFrame("Frame", "ReminderFrame"..i, primaryFrame)
     frame:SetSize(C.reminder.soloBuffsSize, C.reminder.soloBuffsSize)
-    frame:SetPoint(unpack(C.position.selfBuffs))
+    frame:SetPoint("LEFT", primaryFrame, "LEFT", (i-1) * (C.reminder.soloBuffsSize + 5), 0)
     frame:SetTemplate("Default")
     frame:SetFrameLevel(6)
     frame.id = i
@@ -79,23 +96,37 @@ for i, group in ipairs(tab) do
 
     -- Setup flash animation if enabled
     if C.reminder.soloBuffsFlash then
-        local ag = frame:CreateAnimationGroup()
-        ag:SetLooping("REPEAT")
+        local frameAG = frame:CreateAnimationGroup()
+        local iconAG = frame.icon:CreateAnimationGroup()
+        frameAG:SetLooping("REPEAT")
+        iconAG:SetLooping("REPEAT")
         
-        local fadeOut = ag:CreateAnimation("Alpha")
-        fadeOut:SetFromAlpha(1)
-        fadeOut:SetToAlpha(0.1)
-        fadeOut:SetDuration(0.5)
-        fadeOut:SetSmoothing("IN_OUT")
+        local frameFadeOut = frameAG:CreateAnimation("Alpha")
+        local iconFadeOut = iconAG:CreateAnimation("Alpha")
+        frameFadeOut:SetFromAlpha(1)
+        frameFadeOut:SetToAlpha(0.1)
+        frameFadeOut:SetDuration(0.5)
+        frameFadeOut:SetSmoothing("IN_OUT")
+        iconFadeOut:SetFromAlpha(1)
+        iconFadeOut:SetToAlpha(0.1)
+        iconFadeOut:SetDuration(0.5)
+        iconFadeOut:SetSmoothing("IN_OUT")
         
-        local fadeIn = ag:CreateAnimation("Alpha")
-        fadeIn:SetFromAlpha(0.1)
-        fadeIn:SetToAlpha(1)
-        fadeIn:SetDuration(0.5)
-        fadeIn:SetSmoothing("IN_OUT")
-        fadeIn:SetOrder(2)
+        local frameFadeIn = frameAG:CreateAnimation("Alpha")
+        local iconFadeIn = iconAG:CreateAnimation("Alpha")
+        frameFadeIn:SetFromAlpha(0.1)
+        frameFadeIn:SetToAlpha(1)
+        frameFadeIn:SetDuration(0.5)
+        frameFadeIn:SetSmoothing("IN_OUT")
+        frameFadeIn:SetOrder(2)
+        iconFadeIn:SetFromAlpha(0.1)
+        iconFadeIn:SetToAlpha(1)
+        iconFadeIn:SetDuration(0.5)
+        iconFadeIn:SetSmoothing("IN_OUT")
+        iconFadeIn:SetOrder(2)
         
-        ag:Play()
+        frameAG:Play()
+        iconAG:Play()
     end
 
     -- Set up event handling
@@ -104,3 +135,7 @@ for i, group in ipairs(tab) do
     frame:RegisterEvent("PLAYER_ENTERING_WORLD")
     frame:RegisterEvent("UNIT_AURA")
 end
+
+-- Center the primary frame
+primaryFrame:ClearAllPoints()
+primaryFrame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)

@@ -192,8 +192,8 @@ end
 
 function NP.AurasPostCreateIcon(element, button)
     NP.CreateBorderFrame(button)
-    button.remaining = R.SetFontString(button, C.font.auras_font, 6, C.font.auras_font_style)
-    button.remaining:SetShadowOffset(C.font.auras_font_shadow and 1 or 0, C.font.auras_font_shadow and -1 or 0)
+    button.remaining = R.SetFontString(button, unpack(C.font.nameplates.auras))
+    button.remaining:SetShadowOffset(1, -1)
     button.remaining:SetPoint("CENTER", button, "CENTER", 1, 0)
     button.remaining:SetJustifyH("CENTER")
 
@@ -203,8 +203,8 @@ function NP.AurasPostCreateIcon(element, button)
 
     button.Count:SetPoint("BOTTOM", button, "TOP", 1, 0)
     button.Count:SetJustifyH("CENTER")
-    button.Count:SetFont(C.font.auras_font, C.font.auras_font_size, C.font.auras_font_style)
-    button.Count:SetShadowOffset(C.font.auras_font_shadow and 1 or 0, C.font.auras_font_shadow and -1 or 0)
+    button.Count:SetFont(unpack(C.font.nameplates.auras))
+    button.Count:SetShadowOffset(1, -1)
 
     element.disableCooldown = false
     button.Cooldown:SetReverse(true)
@@ -367,7 +367,7 @@ function NP.UpdateTarget(self)
     local isMe = UnitIsUnit(self.unit, "player")
 
     if isTarget and not isMe then
-        SetColorBorder(self.Health, unpack(C.nameplate.targetBorderColor))
+        -- SetColorBorder(self.Health, unpack(C.nameplate.targetBorderColor))
         self:SetAlpha(1)
         if C.nameplate.targetGlow then
             self.Glow:Show()
@@ -385,7 +385,7 @@ function NP.UpdateTarget(self)
             self.LTargetIndicator:Show()
         end
     else
-        SetColorBorder(self.Health, unpack(C.media.borderColor))
+        -- SetColorBorder(self.Health, unpack(C.media.borderColor))
         if not UnitExists("target") or isMe then
             self:SetAlpha(1)
         else

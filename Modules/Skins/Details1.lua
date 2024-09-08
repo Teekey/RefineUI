@@ -46,41 +46,18 @@ LSM:Register(LSM.MediaType.STATUSBAR, 'RefineUIHeader', [[Interface\AddOns\Refin
 LSM:Register(LSM.MediaType.STATUSBAR, 'RefineUIBar', [[Interface\AddOns\RefineUI\Media\Textures\Details\Bar.blp]])
 LSM:Register(LSM.MediaType.STATUSBAR, 'RefineUIBG', [[Interface\AddOns\RefineUI\Media\Textures\Details\BG.blp]])
 
--- local function UpdateDetailsPosition()
---     local minimapAnchor = _G["MinimapAnchor"]
---     if not minimapAnchor then return end
+local function UpdateDetailsPosition()
 
---     local detailsFrame = _G["DetailsBaseFrame1"] -- Adjust if your Details frame has a different name
---     if not detailsFrame then return end
+    local detailsFrame = _G["DetailsBaseFrame1"] -- Adjust if your Details frame has a different name
+    if not detailsFrame then return end
 
---     local minimapLeft = minimapAnchor:GetLeft()
---     local minimapTop = minimapAnchor:GetTop()
---     local minimapBottom = minimapAnchor:GetBottom()
---     local minimapWidth = minimapAnchor:GetWidth()
 
---     local titleMenuHeight = 36 -- Adjust this value based on your title menu's actual height
-
---     -- Position Details to the left of the minimap, accounting for the title menu
---     detailsFrame:ClearAllPoints()
---     detailsFrame:SetPoint("TOPRIGHT", UIParent, "BOTTOMLEFT", minimapLeft - 7, minimapTop - titleMenuHeight)
---     detailsFrame:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMLEFT", minimapLeft - 7, minimapBottom - 6)
+    -- -- Position Details to the left of the minimap, accounting for the title menu
+    detailsFrame:SetHeight(280)
     
---     -- Set the width to match the minimap
---     detailsFrame:SetWidth(minimapWidth - 6)
--- end
-
--- Hook the update function to relevant events
--- local f = CreateFrame("Frame")
--- f:RegisterEvent("PLAYER_LOGIN")
--- f:RegisterEvent("PLAYER_ENTERING_WORLD")
--- f:SetScript("OnEvent", function(self, event)
---     if event == "PLAYER_LOGIN" then
---         -- Delay the initial positioning to ensure all addons are loaded
---         C_Timer.After(1, UpdateDetailsPosition)
---     elseif event == "PLAYER_ENTERING_WORLD" then
---         UpdateDetailsPosition()
---     end
--- end)
+    -- Set the width to match the minimap
+    detailsFrame:SetWidth(300)
+end
 
 local skinTable = {
     file = [[Interface\AddOns\Details\images\skins\flat_skin.blp]],
@@ -338,9 +315,9 @@ local skinTable = {
                 1 -- [4]
             },
             ["anchor"] = "all",
-            ["height"] = 114.042518615723,
+            ["height"] = 300,
             ["alpha"] = 0.5,
-            ["width"] = 283.000183105469
+            ["width"] = 285
         },
         ["stretch_button_side"] = 1,
         ["bars_sort_direction"] = 1
@@ -349,39 +326,45 @@ local skinTable = {
 
 _detalhes.skins["RefineUI"] = skinTable
 
--- local lower_instance = _detalhes:GetLowerInstanceNumber()
--- if lower_instance then
--- 	for i = lower_instance, #_detalhes.tabela_instancias do
--- 		local instance = Details:GetInstance(i)
--- 		if instance and instance.rows_fit_in_window then
--- 			for j = 1, instance.rows_fit_in_window do
--- 				local bar = _G["DetailsBarra_Statusbar_"..i.."_"..j]
--- 				local icon = _G["DetailsBarra_IconFrame_"..i.."_"..j]
---                 icon:ClearAllPoints()
---                 icon:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
--- 				if bar and not bar.backdrop then
--- 					bar:SetTemplate("Default")
--- 					-- bar.backdrop:SetPoint("TOPLEFT", icon, -3, 3)
+local lower_instance = _detalhes:GetLowerInstanceNumber()
+if lower_instance then
+	for i = lower_instance, #_detalhes.tabela_instancias do
+		local instance = Details:GetInstance(i)
+		if instance and instance.rows_fit_in_window then
+			-- for j = 1, instance.rows_fit_in_window do
+			-- 	local bar = _G["DetailsBarra_Statusbar_"..i.."_"..j]
+			-- 	local icon = _G["DetailsBarra_IconFrame_"..i.."_"..j]
+			-- 	if bar and not bar.backdrop then
+			-- 		bar:CreateBackdrop("Transparent")
+			-- 		bar.backdrop:SetPoint("TOPLEFT", icon, -3, 3)
 
--- 					bar.bg = bar:CreateTexture(nil, "BORDER")
--- 					bar.bg:SetAllPoints(bar)
--- 					bar.bg:SetTexture(C.media.texture)
--- 					bar.bg:SetVertexColor(.6, .6, .6, 0.25)
--- 				end
--- 			end
+			-- 		bar.bg = bar:CreateTexture(nil, "BORDER")
+			-- 		bar.bg:SetAllPoints(bar)
+			-- 		bar.bg:SetTexture(C.media.texture)
+			-- 		bar.bg:SetVertexColor(.6, .6, .6, 0.25)
+			-- 	end
+			-- end
 
--- 			local frame = _G["DetailsUpFrameInstance"..i]
--- 			frame.b = CreateFrame("Frame", nil, frame:GetParent())
--- 			-- frame.b:SetTemplate("Overlay")
--- 			frame.b:SetPoint("TOPLEFT", frame, "TOPLEFT", -24, 15)
--- 			frame.b:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 35, 6)
--- 			frame.b:SetFrameLevel(frame:GetFrameLevel() - 1)
+			-- local frame = _G["DetailsUpFrameInstance"..i]
+			-- frame.b = CreateFrame("Frame", nil, frame:GetParent())
+			-- frame.b:SetTemplate("Overlay")
+			-- frame.b:SetPoint("TOPLEFT", frame, "TOPLEFT", -24, 15)
+			-- frame.b:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 35, 6)
+			-- frame.b:SetFrameLevel(frame:GetFrameLevel() - 1)
 
--- 			instance:ChangeSkin("RefineUI")
--- 		end
--- 	end
--- end
+			instance:ChangeSkin("RefineUI")
+		end
+	end
+end
 
--- hooksecurefunc(Details, "ApplyProfile", function()
---     C_Timer.After(0.5, UpdateDetailsPosition)
--- end)
+hooksecurefunc(Details, "ApplyProfile", function()
+    C_Timer.After(1, UpdateDetailsPosition)
+end)
+
+local frame = CreateFrame("Frame")
+frame:RegisterEvent("PLAYER_ENTERING_WORLD")
+frame:SetScript("OnEvent", function(self, event)
+    if event == "PLAYER_ENTERING_WORLD" then
+        C_Timer.After(1, UpdateDetailsPosition)
+    end
+end)

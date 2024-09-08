@@ -1,46 +1,22 @@
-local T, C, L = unpack(TKUI)
-if C.unitframe.enable ~= true or C.filger.enable ~= true then return end
+local R, C, L = unpack(RefineUI)
+if C.filger.enable ~= true then return end
 
 ----------------------------------------------------------------------------------------
 --	Lightweight buff/debuff tracking (Filger by Nils Ruesch, editors Affli/SinaC/Ildyria)
 ----------------------------------------------------------------------------------------
-P_BUFF_ICON_Anchor:SetPoint(unpack(C.position.filger.player_buff_icon))
-P_BUFF_ICON_Anchor:SetSize(C.filger.buffs_size, C.filger.buffs_size)
+LEFT_BUFF_Anchor:SetPoint(unpack(C.position.filger.left_buff))
+LEFT_BUFF_Anchor:SetSize(C.filger.buffs_size, C.filger.buffs_size)
 
-P_PROC_ICON_Anchor:SetPoint(unpack(C.position.filger.player_proc_icon))
-P_PROC_ICON_Anchor:SetSize(C.filger.buffs_size, C.filger.buffs_size)
+RIGHT_BUFF_Anchor:SetPoint(unpack(C.position.filger.right_buff))
+RIGHT_BUFF_Anchor:SetSize(C.filger.buffs_size, C.filger.buffs_size)
 
-SPECIAL_P_BUFF_ICON_Anchor:SetPoint(unpack(C.position.filger.special_proc_icon))
-SPECIAL_P_BUFF_ICON_Anchor:SetSize(C.filger.buffs_size, C.filger.buffs_size)
-
-T_DEBUFF_ICON_Anchor:SetPoint(unpack(C.position.filger.target_debuff_icon))
-T_DEBUFF_ICON_Anchor:SetSize(C.filger.buffs_size, C.filger.buffs_size)
-
-T_BUFF_Anchor:SetPoint(unpack(C.position.filger.target_buff_icon))
-T_BUFF_Anchor:SetSize(C.filger.pvp_size, C.filger.pvp_size)
-
-PVE_PVP_DEBUFF_Anchor:SetPoint(unpack(C.position.filger.pve_debuff))
-PVE_PVP_DEBUFF_Anchor:SetSize(C.filger.pvp_size, C.filger.pvp_size)
-
-PVE_PVP_CC_Anchor:SetPoint(unpack(C.position.filger.pve_cc))
-PVE_PVP_CC_Anchor:SetSize(221, 25)
-
-COOLDOWN_Anchor:SetPoint(C.position.filger.cooldown[1], C.position.filger.cooldown[2], C.position.filger.cooldown[3],
-	C.position.filger.cooldown[4],
-	C.unitframe.plugins_swing and C.position.filger.cooldown[5] + 12 or C.position.filger.cooldown[5])
-COOLDOWN_Anchor:SetSize(C.filger.cooldown_size, C.filger.cooldown_size)
-
-T_DE_BUFF_BAR_Anchor:SetPoint(C.position.filger.target_bar[1],
-	C.unitframe.portrait_enable and "oUF_Target_Portrait" or C.position.filger.target_bar[2],
-	C.position.filger.target_bar[3],
-	C.unitframe.portrait_enable and C.position.filger.target_bar[4] - 3 or C.position.filger.target_bar[4],
-	C.unitframe.portrait_enable and C.position.filger.target_bar[5] + 38 or C.position.filger.target_bar[5])
-T_DE_BUFF_BAR_Anchor:SetSize(218, 25)
+BOTTOM_BUFF_Anchor:SetPoint(unpack(C.position.filger.bottom_buff))
+BOTTOM_BUFF_Anchor:SetSize(C.filger.buffs_size, C.filger.buffs_size)
 
 SpellActivationOverlayFrame:SetFrameStrata("BACKGROUND")
 
 local Filger = {}
-local MyUnits = { player = true, vehicle = true, pet = true }
+local MyUnits = {player = true, vehicle = true, pet = true}
 local SpellGroups = {}
 
 function Filger:TooltipOnEnter()
@@ -60,28 +36,11 @@ end
 function Filger:UpdateCD()
 	local time = self.value.start + self.value.duration - GetTime()
 
-	if self:GetParent().Mode == "BAR" then
-		self.statusbar:SetValue(time)
-		if time <= 60 then
-			self.time:SetFormattedText("%.1f", time)
-		else
-			self.time:SetFormattedText("%d:%.2d", time / 60, time % 60)
-		end
-	else
-		-- ICON mode
-		if time < 0 then
-			local frame = self:GetParent()
-			frame.actives[self.value.spid] = nil
-			self:SetScript("OnUpdate", nil)
-			self.time:Hide()
-			Filger.DisplayActives(frame)
-		else
-			if time <= 60 then
-				self.time:SetFormattedText("%d", ceil(time))
-			else
-				self.time:SetFormattedText("%d:%.2d", time / 60, time % 60)
-			end
-		end
+	if time < 0 then
+		local frame = self:GetParent()
+		frame.actives[self.value.spid] = nil
+		self:SetScript("OnUpdate", nil)
+		Filger.DisplayActives(frame)
 	end
 end
 
@@ -96,143 +55,39 @@ function Filger:DisplayActives()
 	for _, value in pairs(self.actives) do
 		local bar = self.bars[index]
 		if not bar then
-			bar = CreateFrame("Frame", "FilgerAnchor" .. id .. "Frame" .. index, self)
-			bar:SetScale(1)
-			bar:SetTemplate("Default")
-			bar:SetBackdropBorderColor(unpack(C.media.classborder_color))
+			bar = CreateFrame("Frame", "FilgerAnchor"..id.."Frame"..index, self)
+			bar:SetTemplate("Icon")
 			if index == 1 then
 				bar:SetPoint(unpack(self.Position))
 			else
 				if self.Direction == "UP" then
 					bar:SetPoint("BOTTOM", previous, "TOP", 0, self.Interval)
 				elseif self.Direction == "RIGHT" then
-					bar:SetPoint("LEFT", previous, "RIGHT",
-						self.Mode == "ICON" and self.Interval or (self.BarWidth + self.Interval + 7), 0)
+					bar:SetPoint("LEFT", previous, "RIGHT", self.Interval, 0)
 				elseif self.Direction == "LEFT" then
-					bar:SetPoint("RIGHT", previous, "LEFT",
-						self.Mode == "ICON" and -self.Interval or -(self.BarWidth + self.Interval + 7), 0)
+					bar:SetPoint("RIGHT", previous, "LEFT", -self.Interval, 0)
 				else
 					bar:SetPoint("TOP", previous, "BOTTOM", 0, -self.Interval)
 				end
 			end
 
-			if self.Mode == "ICON" then
-				-- Create a subframe to hold the cooldown and icon
-				bar.iconFrame = CreateFrame("Frame", nil, bar)
-				bar.iconFrame:SetPoint("TOPLEFT", 3, -3)
-				bar.iconFrame:SetPoint("BOTTOMRIGHT", -3, 3)
-				bar.iconFrame:SetFrameLevel(bar:GetFrameLevel() + 1)
+			bar.icon = bar:CreateTexture("$parentIcon", "BORDER")
+			bar.icon:SetPoint("TOPLEFT", 2, -2)
+			bar.icon:SetPoint("BOTTOMRIGHT", -2, 2)
+			bar.icon:SetTexCoord(0.1, 0.9, 0.1, 0.9)
 
-				if bar.icon then
-					bar.icon = _G[bar.icon:GetName()]
-				else
-					bar.icon = bar.iconFrame:CreateTexture("$parentIcon", "ARTWORK")
-					bar.icon:SetAllPoints()
-					bar.icon:SetTexCoord(0.1, 0.9, 0.1, 0.9)
-				end
+			bar.cooldown = CreateFrame("Cooldown", "$parentCD", bar, "CooldownFrameTemplate")
+			bar.cooldown:SetAllPoints(bar.icon)
+			bar.cooldown:SetReverse(true)
+			bar.cooldown:SetDrawEdge(false)
+			bar.cooldown:SetFrameLevel(3)
 
-				if bar.cooldown then
-					bar.cooldown = _G[bar.cooldown:GetName()]
-				else
-					bar.cooldown = CreateFrame("Cooldown", "$parentCD", bar.iconFrame, "CooldownFrameTemplate")
-				end
-				bar.cooldown:SetPoint("TOPLEFT", -3, 3)
-				bar.cooldown:SetPoint("BOTTOMRIGHT", 3, -3)
-				bar.cooldown:SetReverse(true)
-				bar.cooldown:SetDrawEdge(false)
-				bar.cooldown:SetFrameLevel(bar.iconFrame:GetFrameLevel()-1)
+			bar.count = bar:CreateFontString("$parentCount", "OVERLAY")
+			bar.count:SetFont(unpack(C.font.filger.count))
+			bar.count:SetShadowOffset(1, -1)
+			bar.count:SetPoint("BOTTOMRIGHT", 1, -2)
+			bar.count:SetJustifyH("RIGHT")
 
-				if bar.count then
-					bar.count = _G[bar.count:GetName()]
-				else
-					bar.count = bar.iconFrame:CreateFontString("$parentCount", "OVERLAY")
-					bar.count:SetFont(C.font.filger_count_font, C.font.filger_count_size,
-						C.font.filger_count_style)
-					bar.count:SetShadowOffset(C.font.filger_count_shadow and 1 or 0,
-						C.font.cooldown_timers_font_shadow and -1 or 0)
-					bar.count:SetPoint("BOTTOMRIGHT", 1, -2)
-					bar.count:SetJustifyH("RIGHT")
-				end
-
-				if bar.time then
-					bar.time = _G[bar.time:GetName()]
-				else
-					bar.time = bar.iconFrame:CreateFontString("$parentTime", "OVERLAY")
-					bar.time:SetFont(C.font.filger_time_font, C.font.filger_time_size, C.font.filger_time_style)
-					bar.time:SetShadowOffset(C.font.filger_time_shadow and 1 or 0, C.font.filger_time_shadow and -1 or 0)
-					bar.time:SetPoint("CENTER", 0, 0)
-					bar.time:SetJustifyH("CENTER")
-				end
-			else
-				if bar.statusbar then
-					bar.statusbar = _G[bar.statusbar:GetName()]
-				else
-					bar.statusbar = CreateFrame("StatusBar", "$parentStatusBar", bar)
-					bar.statusbar:SetWidth(self.BarWidth)
-					bar.statusbar:SetHeight(self.IconSize - 10)
-					bar.statusbar:SetStatusBarTexture(C.media.texture)
-					bar.statusbar:SetStatusBarColor(T.color.r, T.color.g, T.color.b, 1)
-					if self.IconSide == "LEFT" then
-						bar.statusbar:SetPoint("BOTTOMLEFT", bar, "BOTTOMRIGHT", 5, 2)
-					elseif self.IconSide == "RIGHT" then
-						bar.statusbar:SetPoint("BOTTOMRIGHT", bar, "BOTTOMLEFT", -5, 2)
-					end
-				end
-				bar.statusbar:SetMinMaxValues(0, 1)
-				bar.statusbar:SetValue(0)
-
-				if bar.bg then
-					bar.bg = _G[bar.bg:GetName()]
-				else
-					bar.bg = CreateFrame("Frame", "$parentBG", bar.statusbar)
-					bar.bg:SetPoint("TOPLEFT", -2, 2)
-					bar.bg:SetPoint("BOTTOMRIGHT", 2, -2)
-					bar.bg:SetFrameStrata("BACKGROUND")
-					bar.bg:SetTemplate("Default")
-				end
-
-				if bar.background then
-					bar.background = _G[bar.background:GetName()]
-				else
-					bar.background = bar.statusbar:CreateTexture(nil, "BACKGROUND")
-					bar.background:SetAllPoints()
-					bar.background:SetTexture(C.media.texture)
-					bar.background:SetVertexColor(T.color.r, T.color.g, T.color.b, 0.2)
-				end
-
-				if bar.time then
-					bar.time = _G[bar.time:GetName()]
-				else
-					bar.time = bar.statusbar:CreateFontString("$parentTime", "OVERLAY")
-					bar.time:SetFont(C.font.filger_font, C.font.filger_font_size, C.font.filger_font_style)
-					bar.time:SetShadowOffset(C.font.filger_font_shadow and 1 or 0, C.font.filger_font_shadow and -1 or 0)
-					bar.time:SetPoint("RIGHT", bar.statusbar, 0, 0)
-					bar.time:SetJustifyH("RIGHT")
-				end
-
-				if bar.count then
-					bar.count = _G[bar.count:GetName()]
-				else
-					bar.count = bar:CreateFontString("$parentCount", "OVERLAY")
-					bar.count:SetFont(C.font.filger_font, C.font.filger_font_size, C.font.filger_font_style)
-					bar.count:SetShadowOffset(C.font.filger_font_shadow and 1 or 0, C.font.filger_font_shadow and -1 or 0)
-					bar.count:SetPoint("BOTTOMRIGHT", 1, 0)
-					bar.count:SetJustifyH("RIGHT")
-				end
-
-				if bar.spellname then
-					bar.spellname = _G[bar.spellname:GetName()]
-				else
-					bar.spellname = bar.statusbar:CreateFontString("$parentSpellName", "OVERLAY")
-					bar.spellname:SetFont(C.font.filger_font, C.font.filger_font_size, C.font.filger_font_style)
-					bar.spellname:SetShadowOffset(C.font.filger_font_shadow and 1 or 0,
-						C.font.filger_font_shadow and -1 or 0)
-					bar.spellname:SetPoint("LEFT", bar.statusbar, 2, 0)
-					bar.spellname:SetPoint("RIGHT", bar.time, "LEFT")
-					bar.spellname:SetJustifyH("LEFT")
-				end
-			end
-			bar.spellID = 0
 			self.bars[index] = bar
 		end
 		previous = bar
@@ -249,7 +104,7 @@ function Filger:DisplayActives()
 	end
 	table.sort(temp, sortTable)
 
-	local limit = (C.actionbar.button_size * 12) / self.IconSize
+	local limit = (C.actionbars.buttonSize * 12)/self.IconSize
 
 	index = 1
 	for activeIndex, value in pairs(temp) do
@@ -257,10 +112,7 @@ function Filger:DisplayActives()
 			break
 		end
 		local bar = self.bars[index]
-		bar.spellName = C_Spell.GetSpellInfo(value.spid)
-		if self.Mode == "BAR" then
-			bar.spellname:SetText(bar.spellName)
-		end
+		bar.spellName = GetSpellInfo(value.spid)
 		bar.icon:SetTexture(value.icon)
 		if value.count and value.count > 1 then
 			bar.count:SetText(value.count)
@@ -269,26 +121,18 @@ function Filger:DisplayActives()
 			bar.count:Hide()
 		end
 		if value.duration and value.duration > 0 then
-			if self.Mode == "ICON" then
-				bar.cooldown:SetCooldown(value.start, value.duration)
-				bar.value = value
-				bar:SetScript("OnUpdate", Filger.UpdateCD)
-				bar.cooldown:Show()
-				bar.time:Show()
-			else
-				bar.statusbar:SetMinMaxValues(0, value.duration)
-				bar.value = value
-				bar:SetScript("OnUpdate", Filger.UpdateCD)
+			if value.start + value.duration - GetTime() > 0.3 then
+				bar.cooldown:SetCooldown(value.start + 0.1, value.duration)
 			end
+			if value.data.filter == "CD" or value.data.filter == "ICD" then
+				bar.value = value
+				bar:SetScript("OnUpdate", Filger.UpdateCD)
+			else
+				bar:SetScript("OnUpdate", nil)
+			end
+			bar.cooldown:Show()
 		else
-			if self.Mode == "ICON" then
-				bar.cooldown:Hide()
-				bar.time:Hide()
-			else
-				bar.statusbar:SetMinMaxValues(0, 1)
-				bar.statusbar:SetValue(1)
-				bar.time:SetText("")
-			end
+			bar.cooldown:Hide()
 			bar:SetScript("OnUpdate", nil)
 		end
 		bar.spellID = value.spid
@@ -301,6 +145,50 @@ function Filger:DisplayActives()
 		bar:SetHeight(self.IconSize or C.filger.buffs_size)
 		bar:SetAlpha(value.data.opacity or 1)
 		bar:Show()
+
+		-- Adjust frame levels
+		bar.cooldown:SetFrameLevel(bar:GetFrameLevel() + 1)
+		bar.cooldown:SetSwipeTexture("Interface\\AddOns\\RefineUI\\Media\\Textures\\CDBig.blp")
+		bar.cooldown:SetPoint("TOPLEFT", bar, "TOPLEFT", -1, 1)
+		bar.cooldown:SetPoint("BOTTOMRIGHT", bar, "BOTTOMRIGHT", 1, -1)
+		
+		-- Add duration text
+		if not bar.duration then
+			bar.duration = bar:CreateFontString(nil, "OVERLAY")
+			bar.duration:SetParent(bar.cooldown)
+			bar.duration:SetFont(unpack(C.font.filger.time))
+			bar.duration:SetShadowOffset(1, -1)
+			bar.duration:SetPoint("CENTER", 0, 0)
+		end
+		
+		if value.duration and value.duration > 0 then
+			bar.duration:Show()
+			bar:SetScript("OnUpdate", function(self, elapsed)
+				self.elapsed = (self.elapsed or 0) + elapsed
+				if self.elapsed >= 0.1 then
+					local timeLeft = value.start + value.duration - GetTime()
+					if timeLeft > 0 then
+						self.duration:SetText(R.FormatTime(timeLeft))
+					else
+						self.duration:SetText("")
+						self:SetScript("OnUpdate", nil)
+					end
+					self.elapsed = 0
+				end
+			end)
+		else
+			bar.duration:Hide()
+			bar:SetScript("OnUpdate", nil)
+		end
+
+		-- Set the border color
+		if value.data.color then
+			bar.border:SetBackdropBorderColor(unpack(value.data.color))
+		else
+			local r, g, b = unpack(R.oUF_colors.class[R.class])
+			bar.border:SetBackdropBorderColor(r, g, b, 1)
+		end
+
 		index = index + 1
 	end
 
@@ -317,31 +205,26 @@ local function FindAuras(self, unit)
 		end
 	end
 
-	local UnitAuraBySlot = C_UnitAuras.GetAuraDataBySlot
-
 	for i = 1, 2 do
 		local filter = (i == 1 and "HELPFUL" or "HARMFUL")
 		local index = 1
 		while true do
-			local aura = UnitAuraBySlot(unit, index, filter)
-			if not aura then break end
-	
-			local name, icon, count, duration, expirationTime, caster, spid = 
-				aura.name, aura.icon, aura.applications, aura.duration, aura.expirationTime, aura.sourceUnit, aura.spellId
-	
+			local name, icon, count, _, duration, expirationTime, caster, _, _, spid = UnitAura(unit, index, filter)
+			if not name then break end
+
 			local data = SpellGroups[self.Id].spells[name] or SpellGroups[self.Id].spells[spid]
 			if data and (data.caster ~= 1 and (caster == data.caster or data.caster == "all") or MyUnits[caster]) and (not data.unitID or data.unitID == unit) and (not data.absID or spid == data.spellID) then
 				local isKnown = data.requireSpell and IsPlayerSpell(data.requireSpell)
-				if ((data.filter == "BUFF" and filter == "HELPFUL") or (data.filter == "DEBUFF" and filter == "HARMFUL")) and (not data.spec or data.spec == T.Spec) and (not data.requireSpell or isKnown) then
+				if ((data.filter == "BUFF" and filter == "HELPFUL") or (data.filter == "DEBUFF" and filter == "HARMFUL")) and (not data.spec or data.spec == R.Spec) and (not data.requireSpell or isKnown) then
 					if not data.count or count >= data.count then
-						self.actives[spid] = { data = data, name = name, icon = icon, count = count, start = expirationTime - duration, duration = duration, spid = spid, sort = data.sort }
+						self.actives[spid] = {data = data, name = name, icon = icon, count = count, start = expirationTime - duration, duration = duration, spid = spid, sort = data.sort, color = data.color}
 					end
-				elseif data.filter == "ICD" and (data.trigger == "BUFF" or data.trigger == "DEBUFF") and (not data.spec or data.spec == T.Spec) and (not data.requireSpell or isKnown) then
+				elseif data.filter == "ICD" and (data.trigger == "BUFF" or data.trigger == "DEBUFF") and (not data.spec or data.spec == R.Spec) and (not data.requireSpell or isKnown) then
 					if data.slotID then
 						local slotLink = GetInventoryItemLink("player", data.slotID)
-						_, _, _, _, _, _, _, _, _, icon = GetItemInfo(slotLink)
+						_, _, _, _, _, _, _, _, _, icon = C_Item.GetItemInfo(slotLink)
 					end
-					self.actives[spid] = { data = data, name = name, icon = icon, count = count, start = expirationTime - duration, duration = data.duration, spid = spid, sort = data.sort }
+					self.actives[spid] = {data = data, name = name, icon = icon, count = count, start = expirationTime - duration, duration = data.duration, spid = spid, sort = data.sort, color = data.color}
 				end
 			end
 			index = index + 1
@@ -354,9 +237,9 @@ function Filger:OnEvent(event, unit, _, castID)
 	if event == "UNIT_AURA" and (unit == "player" or unit == "target" or unit == "pet" or unit == "focus") then
 		FindAuras(self, unit)
 	elseif event == "UNIT_SPELLCAST_SUCCEEDED" and unit == "player" then
-		local name, _, icon = C_Spell.GetSpellInfo(castID)
+		local name, _, icon = GetSpellInfo(castID)
 		local data = SpellGroups[self.Id].spells[name]
-		if data and data.filter == "ICD" and data.trigger == "NONE" and (not data.spec or data.spec == T.Spec) then
+		if data and data.filter == "ICD" and data.trigger == "NONE" and (not data.spec or data.spec == R.Spec) then
 			local start, duration = GetTime(), data.duration
 			if data.totem then
 				local haveTotem, _, startTime, durationTime = GetTotemInfo(1)
@@ -364,8 +247,7 @@ function Filger:OnEvent(event, unit, _, castID)
 					start, duration = startTime, durationTime
 				end
 			end
-			self.actives[data.spellID] = { data = data, name = name, icon = icon, count = nil, start = start, duration =
-			duration, spid = data.spellID, sort = data.sort }
+			self.actives[data.spellID] = {data = data, name = name, icon = icon, count = nil, start = start, duration = duration, spid = data.spellID, sort = data.sort, color = data.color}
 			Filger.DisplayActives(self)
 		end
 	elseif event == "PLAYER_TARGET_CHANGED" then
@@ -423,18 +305,18 @@ function Filger:OnEvent(event, unit, _, castID)
 			end
 		end
 
-		for i = 1, #C["filger_spells"][T.class][self.Id], 1 do
-			local data = C["filger_spells"][T.class][self.Id][i]
+		for i = 1, #C["filger_spells"][R.class][self.Id], 1 do
+			local data = C["filger_spells"][R.class][self.Id][i]
 
-			if data.filter == "CD" and (not data.spec or data.spec == T.Spec) then
+			if data.filter == "CD" and (not data.spec or data.spec == R.Spec) then
 				local name, icon, start, duration, spid
 				if data.spellID then
-					name, _, icon = C_Spell.GetSpellInfo(data.spellID)
+					name, _, icon = GetSpellInfo(data.spellID)
 					if name then
 						if data.absID then
-							start, duration = GetSpellCooldown(data.spellID)
+							start, duration = C_Spell.GetSpellCooldown(data.spellID)
 						else
-							start, duration = GetSpellCooldown(name)
+							start, duration = C_Spell.GetSpellCooldown(name)
 						end
 						spid = data.spellID
 					end
@@ -442,14 +324,13 @@ function Filger:OnEvent(event, unit, _, castID)
 					spid = data.slotID
 					local slotLink = GetInventoryItemLink("player", data.slotID)
 					if slotLink then
-						name, _, _, _, _, _, _, _, _, icon = GetItemInfo(slotLink)
+						name, _, _, _, _, _, _, _, _, icon = C_Item.GetItemInfo(slotLink)
 						start, duration = GetInventoryItemCooldown("player", data.slotID)
 					end
 				end
 				if name and (duration or 0) > 1.5 and duration < 900 then
-					if not (T.class == "DEATHKNIGHT" and data.filter == "CD" and duration < 10) then -- Filter rune cd
-						self.actives[spid] = { data = data, name = name, icon = icon, count = nil, start = start, duration =
-						duration, spid = spid, sort = data.sort }
+					if not (R.class == "DEATHKNIGHT" and data.filter == "CD" and duration < 10) then -- Filter rune cd
+						self.actives[spid] = {data = data, name = name, icon = icon, count = nil, start = start, duration = duration, spid = spid, sort = data.sort, color = data.color}
 					end
 				end
 			end
@@ -460,16 +341,16 @@ function Filger:OnEvent(event, unit, _, castID)
 end
 
 if C["filger_spells"] and C["filger_spells"]["ALL"] then
-	if not C["filger_spells"][T.class] then
-		C["filger_spells"][T.class] = {}
+	if not C["filger_spells"][R.class] then
+		C["filger_spells"][R.class] = {}
 	end
 
 	for i = 1, #C["filger_spells"]["ALL"], 1 do
 		local merge = false
 		local spellListAll = C["filger_spells"]["ALL"][i]
 		local spellListClass = nil
-		for j = 1, #C["filger_spells"][T.class], 1 do
-			spellListClass = C["filger_spells"][T.class][j]
+		for j = 1, #C["filger_spells"][R.class], 1 do
+			spellListClass = C["filger_spells"][R.class][j]
 			local mergeAll = spellListAll.Merge or false
 			local mergeClass = spellListClass.Merge or false
 			if spellListClass.Name == spellListAll.Name and (mergeAll or mergeClass) then
@@ -478,7 +359,7 @@ if C["filger_spells"] and C["filger_spells"]["ALL"] then
 			end
 		end
 		if not merge or not spellListClass then
-			table.insert(C["filger_spells"][T.class], C["filger_spells"]["ALL"][i])
+			table.insert(C["filger_spells"][R.class], C["filger_spells"]["ALL"][i])
 		else
 			for j = 1, #spellListAll, 1 do
 				table.insert(spellListClass, spellListAll[j])
@@ -488,59 +369,49 @@ if C["filger_spells"] and C["filger_spells"]["ALL"] then
 end
 
 for _, spell in pairs(C.filger.buff_spells_list) do
-	if spell[2] == T.class then
-		tinsert(T.CustomFilgerSpell,
-			{ "P_BUFF_ICON", { spellID = spell[1], unitID = "player", caster = "player", filter = "BUFF", absID = true, custom = true } })
+	if spell[2] == R.class then
+		tinsert(R.CustomFilgerSpell, {"LEFT_BUFF", {spellID = spell[1], unitID = "player", caster = "player", filter = "BUFF", absID = true, custom = true}})
 	end
 end
 
 for _, spell in pairs(C.filger.proc_spells_list) do
-	if spell[2] == T.class then
-		tinsert(T.CustomFilgerSpell,
-			{ "P_PROC_ICON", { spellID = spell[1], unitID = "player", caster = "player", filter = "BUFF", absID = true, custom = true } })
+	if spell[2] == R.class then
+		tinsert(R.CustomFilgerSpell, {"RIGHT_BUFF", {spellID = spell[1], unitID = "player", caster = "player", filter = "BUFF", absID = true, custom = true}})
 	end
 end
 
 for _, spell in pairs(C.filger.debuff_spells_list) do
-	if spell[2] == T.class then
-		tinsert(T.CustomFilgerSpell,
-			{ "T_DEBUFF_ICON", { spellID = spell[1], unitID = "target", caster = "player", filter = "DEBUFF", absID = true, custom = true } })
-	end
-end
-
-for _, spell in pairs(C.filger.aura_bar_spells_list) do
-	if spell[2] == T.class then
-		tinsert(T.CustomFilgerSpell,
-			{ "T_DE/BUFF_BAR", { spellID = spell[1], unitID = "target", caster = "player", filter = "DEBUFF", absID = true, custom = true } })
+	if spell[2] == R.class then
+		tinsert(R.CustomFilgerSpell, {"T_DEBUFF_ICON", {spellID = spell[1], unitID = "target", caster = "player", filter = "DEBUFF", absID = true, custom = true}})
 	end
 end
 
 for _, spell in pairs(C.filger.cd_spells_list) do
-	if spell[2] == T.class then
-		tinsert(T.CustomFilgerSpell, { "COOLDOWN", { spellID = spell[1], filter = "CD", absID = true, custom = true } })
+	if spell[2] == R.class then
+		tinsert(R.CustomFilgerSpell, {"COOLDOWN", {spellID = spell[1], filter = "CD", absID = true, custom = true}})
 	end
 end
 
 for _, spell in pairs(C.filger.ignore_spells_list) do
-	if spell[2] == T.class then
-		T.FilgerIgnoreSpell[C_Spell.GetSpellInfo(spell[1])] = true
+	if spell[2] == R.class then
+		R.FilgerIgnoreSpell[GetSpellInfo(spell[1])] = true
 	end
 end
 
-if C["filger_spells"] and C["filger_spells"][T.class] then
+if C["filger_spells"] and C["filger_spells"][R.class] then
 	for class in pairs(C["filger_spells"]) do
-		if class ~= T.class then
+		if class ~= R.class then
 			C["filger_spells"][class] = nil
 		end
 	end
 
 	local idx = {}
-	for i = 1, #C["filger_spells"][T.class], 1 do
+	for i = 1, #C["filger_spells"][R.class], 1 do
 		local jdx = {}
-		local data = C["filger_spells"][T.class][i]
-		local group = { spells = {} }
+		local data = C["filger_spells"][R.class][i]
+		local group = {spells = {}}
 
-		for _, import in pairs(T.CustomFilgerSpell) do
+		for _, import in pairs(R.CustomFilgerSpell) do
 			if data.Name == import[1] then
 				tinsert(data, import[2])
 			end
@@ -549,39 +420,25 @@ if C["filger_spells"] and C["filger_spells"][T.class] then
 		for j = 1, #data, 1 do
 			local name
 			if data[j].spellID then
-				name = C_Spell.GetSpellInfo(data[j].spellID)
+				name = GetSpellInfo(data[j].spellID)
 			else
 				local slotLink = GetInventoryItemLink("player", data[j].slotID)
 				if slotLink then
-					name = GetItemInfo(slotLink)
+					name = C_Item.GetItemInfo(slotLink)
 				end
 			end
 			if name or data[j].slotID then
-				if T.FilgerIgnoreSpell[name] and not data[j].custom then
+				if R.FilgerIgnoreSpell[name] and not data[j].custom then
 					table.insert(jdx, j)
 				else
-					local GetSpellInfo = C_Spell.GetSpellInfo 
-					local id
-					if data[j].absID then
-						id = data[j].spellID
-					elseif data[j].spellID then
-						local spellName = GetSpellInfo(data[j].spellID)
-						id = spellName and data[j].spellID or nil
-					else
-						id = data[j].slotID
-					end
-					
-					if id then
-						data[j].sort = j
-						group.spells[id] = data[j]
-					else
-						print("TKUI: Invalid spell ID or slot ID for Filger entry", j)
-					end
+					local info = data[j].spellID and C_Spell.GetSpellInfo(data[j].spellID)
+					local id = data[j].absID and data[j].spellID or (info and info.spellID) or data[j].slotID
+					data[j].sort = j
+					group.spells[id] = data[j]
 				end
 			end
 			if not name and not data[j].slotID then
-				print("|cffff0000TKUI: Filger spell ID [" ..
-				(data[j].spellID or data[j].slotID or "UNKNOWN") .. "] no longer exists!|r")
+				print("|cffff0000ShestakUI: Filger spell ID ["..(data[j].spellID or data[j].slotID or "UNKNOWN").."] no longer exists!|r")
 				table.insert(jdx, j)
 			end
 		end
@@ -594,22 +451,21 @@ if C["filger_spells"] and C["filger_spells"][T.class] then
 		table.insert(SpellGroups, i, group)
 
 		if #data == 0 then
-			-- print("|cffff0000TKUI: Filger section ["..data.Name.."] is empty! Report this to Shestak.|r")
 			table.insert(idx, i)
 		end
 	end
 
 	for _, v in ipairs(idx) do
-		table.remove(C["filger_spells"][T.class], v)
+		table.remove(C["filger_spells"][R.class], v)
 	end
 
 	local isEnabled = {
-		["P_BUFF_ICON"] = C.filger.show_buff,
-		["P_PROC_ICON"] = C.filger.show_proc,
+		["LEFT_BUFF"] = C.filger.show_buff,
+		["RIGHT_BUFF"] = C.filger.show_proc,
 		["T_DEBUFF_ICON"] = C.filger.show_debuff,
 		["T_DE/BUFF_BAR"] = C.filger.show_aura_bar,
 		["PVE/PVP_CC"] = C.filger.show_aura_bar,
-		["SPECIAL_P_BUFF_ICON"] = C.filger.show_special,
+		["BOTTOM_BUFF"] = C.filger.show_special,
 		["PVE/PVP_DEBUFF"] = C.filger.show_pvp_player,
 		["T_BUFF"] = C.filger.show_pvp_target,
 		["COOLDOWN"] = C.filger.show_cd,
@@ -618,40 +474,38 @@ if C["filger_spells"] and C["filger_spells"][T.class] then
 	for i = 1, #SpellGroups, 1 do
 		local data = SpellGroups[i].data
 		if isEnabled[data.Name] then
-			local frame = CreateFrame("Frame", "FilgerFrame" .. i .. "_" .. data.Name, T_PetBattleFrameHider)
+			local frame = CreateFrame("Frame", "FilgerFrame"..i.."_"..data.Name, UIParent)
 			frame.Id = i
 			frame.Name = data.Name
 			frame.Direction = data.Direction or "DOWN"
 			frame.IconSide = data.IconSide or "LEFT"
-			frame.Mode = data.Mode or "ICON"
+			frame.Mode = "ICON"  -- Always use ICON mode
 			frame.Interval = data.Interval or 3
 			frame:SetAlpha(data.Alpha or 1)
 			frame.IconSize = data.IconSize or C.filger.buffs_size
-			frame.BarWidth = data.BarWidth or 186
 			frame.Position = data.Position or "CENTER"
 			frame:SetPoint(unpack(data.Position))
 			frame.actives = {}
 
 			if C.filger.test_mode then
 				frame.actives = {}
-				for j = 1, math.min(C.filger.max_test_icon, #C["filger_spells"][T.class][i]), 1 do
-					local data = C["filger_spells"][T.class][i][j]
+				for j = 1, math.min(C.filger.max_test_icon, #C["filger_spells"][R.class][i]), 1 do
+					local data = C["filger_spells"][R.class][i][j]
 					local name, icon
 					if data.spellID then
-						name, _, icon = C_Spell.GetSpellInfo(data.spellID)
+						name, _, icon = GetSpellInfo(data.spellID)
 					elseif data.slotID then
 						local slotLink = GetInventoryItemLink("player", data.slotID)
 						if slotLink then
-							name, _, _, _, _, _, _, _, _, icon = GetItemInfo(slotLink)
+							name, _, _, _, _, _, _, _, _, icon = C_Item.GetItemInfo(slotLink)
 						end
 					end
-					frame.actives[j] = { data = data, name = name, icon = icon, count = 9, start = 0, duration = 0, spid =
-					data.spellID or data.slotID, sort = data.sort }
+					frame.actives[j] = {data = data, name = name, icon = icon, count = 9, start = 0, duration = 0, spid = data.spellID or data.slotID, sort = data.sort, color = data.color}
 				end
 				Filger.DisplayActives(frame)
 			else
-				for j = 1, #C["filger_spells"][T.class][i], 1 do
-					local data = C["filger_spells"][T.class][i][j]
+				for j = 1, #C["filger_spells"][R.class][i], 1 do
+					local data = C["filger_spells"][R.class][i][j]
 					if data.filter == "BUFF" or data.filter == "DEBUFF" or (data.filter == "ICD" and (data.trigger == "BUFF" or data.trigger == "DEBUFF")) then
 						frame:RegisterEvent("UNIT_AURA")
 					elseif data.filter == "CD" then

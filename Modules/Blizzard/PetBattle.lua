@@ -7,7 +7,7 @@ local bar = CreateFrame("Frame", "PetBattleBarHolder", UIParent, "SecureHandlerS
 bar:SetSize(((64) * 6) + (4 * 5), 64 * 1.5)
 bar:EnableMouse(true)
 bar:SetFrameStrata("LOW")
-bar:SetPoint(unpack(C.position.bottomBars))
+bar:SetPoint(unpack(C.position.mainBar))
 RegisterStateDriver(bar, "visibility", "[petbattle] show; hide")
 
 local f = PetBattleFrame
@@ -97,9 +97,8 @@ for i, unit in pairs(units) do
 	unit.HealthText:SetPoint("CENTER", unit.HealthBarBackdrop, "CENTER")
 
 	unit.LevelUnderlay:SetAlpha(0)
-	unit.Level:SetFont(C.font.cooldown_timers_font, C.font.cooldown_timers_font_size, C.font.cooldown_timers_font_style)
-	unit.Level:SetShadowOffset(C.font.cooldown_timers_font_shadow and 1 or 0,
-		C.font.cooldown_timers_font_shadow and -1 or 0)
+	unit.Level:SetFont(unpack(C.font.cooldownTimers))
+	unit.Level:SetShadowOffset(1, -1)
 	unit.Level:SetTextColor(1, 1, 1)
 
 	unit.BorderFlash:Kill()
@@ -158,10 +157,8 @@ hooksecurefunc("PetBattleAuraHolder_Update", function(self)
 				frame.Duration:SetText(turnsRemaining)
 			end
 
-			frame.Duration:SetFont(C.font.cooldown_timers_font, C.font.cooldown_timers_font_size,
-				C.font.cooldown_timers_font_style)
-			frame.Duration:SetShadowOffset(C.font.cooldown_timers_font_shadow and 1 or 0,
-				C.font.cooldown_timers_font_shadow and -1 or 0)
+			frame.Duration:SetFont(unpack(C.font.cooldownTimers))
+			frame.Duration:SetShadowOffset(1, -1)
 			frame.Duration:ClearAllPoints()
 			frame.Duration:SetPoint("CENTER", frame.Icon, "CENTER", 1, -2)
 

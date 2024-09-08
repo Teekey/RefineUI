@@ -10,12 +10,6 @@ local CreateFrame, hooksecurefunc = CreateFrame, hooksecurefunc
 local UIParent = UIParent
 local day, hour, minute = 86400, 3600, 60
 
--- Upvalue frequently used values
-local FONT = C.font.cooldown_timers_font
-local FONT_SIZE = C.font.cooldown_timers_font_size
-local FONT_STYLE = C.font.cooldown_timers_font_style
-local FONT_SHADOW = C.font.cooldown_timers_font_shadow
-
 ----------------------------------------------------------------------------------------
 -- Time Formatting
 ----------------------------------------------------------------------------------------
@@ -53,8 +47,8 @@ local function Timer_OnSizeChanged(self, width)
     if fontScale < 0.5 then
         self:Hide()
     else
-        self.text:SetFont(FONT, FONT_SIZE, FONT_STYLE)
-        self.text:SetShadowOffset(FONT_SHADOW and 1 or 0, FONT_SHADOW and -1 or 0)
+        self.text:SetFont(unpack(C.font.cooldownTimers))
+        self.text:SetShadowOffset(1, -1)
         if self.enabled then Timer_ForceUpdate(self) end
     end
 end

@@ -24,6 +24,8 @@ local function CreateNameplate(self, unit)
 
     NP.CreateNameText(self)
 
+    NP.CreatePortraitAndQuestIcon(self)
+
     NP.CreateCastBar(self)
 
     NP.CreateRaidIcon(self, unit)

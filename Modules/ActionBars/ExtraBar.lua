@@ -127,7 +127,7 @@ _G["ZoneAbilityFrame"]:SetScale(1.25)
 --                 button:SetSize(SIZE, SIZE)
 --                 button:SetTemplate("Transparent")
 --                 if C.actionbars.classcolor_border == true then
---                     button:SetBackdropBorderColor(unpack(C.media.classborder_color))
+--                     button:SetBackdropBorderColor(unpack(C.media.classBorderColor))
 --                 end
 
 --                 button.Icon:CropIcon()

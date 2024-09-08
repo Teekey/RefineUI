@@ -11,13 +11,14 @@ local unpack = unpack
 ----------------------------------------------------------------------------------------
 local function CreateTargetFrame(self)
     -- Configure base unit frame
-    UF.ConfigureUnitFrame(self, "Default")
+    UF.ConfigureUnitFrame(self)
 
     -- Create frame elements
     UF.CreateHealthBar(self)
     UF.CreatePowerBar(self)
     UF.CreateNameText(self)
-    UF.CreateCastBar(self, "Default")
+    UF.CreatePortraitAndCastIcon(self)
+    UF.CreateCastBar(self)
     UF.CreateAuras(self)
     UF.CreateInfo(self)
     UF.CreateRaidIcons(self)

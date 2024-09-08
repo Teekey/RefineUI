@@ -4,7 +4,7 @@
     <Script file="CopyUrl.lua"/>
     <Script file="CopyChat.lua"/>
     <Script file="Filters.lua"/>
-    <Script file="History.lua"/>
+    <!-- <Script file="History.lua"/> -->
     <Script file="Invite.lua"/>
     <Script file="MouseScroll.lua"/>
     <Script file="Sounds.lua"/>

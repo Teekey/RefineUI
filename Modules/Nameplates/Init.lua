@@ -60,8 +60,8 @@ local function InitializeNameplates()
     -- Change nameplate fonts
     local function changeFont(fontObject, size)
         local mult = size or 1
-        fontObject:SetFont(C.font.nameplates_font, C.font.nameplates_font_size * mult, C.font.nameplates_font_style)
-        fontObject:SetShadowOffset(C.font.nameplates_font_shadow and 1 or 0, C.font.nameplates_font_shadow and -1 or 0)
+        fontObject:SetFont(C.font.nameplates.default[1], C.font.nameplates.default[2] * mult, C.font.nameplates.default[3])
+        fontObject:SetShadowOffset(1, -1)
     end
     changeFont(SystemFont_NamePlateFixed)
     changeFont(SystemFont_LargeNamePlateFixed, 2)

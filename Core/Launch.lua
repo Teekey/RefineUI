@@ -1,10 +1,15 @@
-
 local R, C, L = unpack(RefineUI)
 
 -- Spells lists initialization
 
 C.nameplate.debuffsList = {}
 C.nameplate.buffsList = {}
+C.filger.buff_spells_list = {}
+C.filger.proc_spells_list = {}
+C.filger.debuff_spells_list = {}
+C.filger.aura_bar_spells_list = {}
+C.filger.cd_spells_list = {}
+C.filger.ignore_spells_list = {}
 
 ----------------------------------------------------------------------------------------
 --	First Time Launch and On Login file
@@ -115,6 +120,7 @@ OnLogon:SetScript("OnEvent", function(self)
 	if RefineUISettings == nil then RefineUISettings = {} end
 	if RefineUIPositions == nil then RefineUIPositions = {} end
 	if RefineUISettings == nil then RefineUISettings = {} end
+	if RefineUIItems == nil then RefineUIItems = {} end
 	if RefineUISettings.FogOfWar == nil then RefineUISettings.FogOfWar = true end
 	if RefineUISettings.Coords == nil then RefineUISettings.Coords = true end
 	if RefineUISettings.Archaeology == nil then RefineUISettings.Archaeology = false end

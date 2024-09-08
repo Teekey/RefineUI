@@ -29,28 +29,32 @@ end
 ----------------------------------------------------------------------------------------
 --	Minimap border
 ----------------------------------------------------------------------------------------
-local MinimapAnchor = CreateFrame("Frame", "MinimapAnchor", UIParent)
-MinimapAnchor:CreatePanel("Default", C.minimap.size, C.minimap.size, unpack(C.position.minimap))
+-- local MinimapAnchor = CreateFrame("Frame", "MinimapAnchor", UIParent)
+-- MinimapAnchor:CreatePanel("Default", C.minimap.size, C.minimap.size, unpack(C.position.minimap))
 
 -- Disable Minimap Cluster
 MinimapCluster:EnableMouse(false)
-MinimapCluster:SetSize(300, 300)
-MinimapCluster.Selection:SetSize(300, 300)
+MinimapCluster:SetTemplate("Default")
+
 local frame = CreateFrame("Frame")
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 frame:SetScript("OnEvent", function(self, event)
 	self:UnregisterEvent(event)
-	-- Parent Minimap into our frame
-	Minimap:SetParent(MinimapAnchor)
-	Minimap:ClearAllPoints()
-	Minimap:SetPoint("TOPLEFT", MinimapAnchor, "TOPLEFT", 3, -3)
-	Minimap:SetPoint("BOTTOMRIGHT", MinimapAnchor, "BOTTOMRIGHT", -3, 3)
-	Minimap:SetSize(MinimapAnchor:GetWidth(), MinimapAnchor:GetWidth())
 
-	MinimapBackdrop:ClearAllPoints()
-	MinimapBackdrop:SetPoint("TOPLEFT", MinimapAnchor, "TOPLEFT", 4, -4)
-	MinimapBackdrop:SetPoint("BOTTOMRIGHT", MinimapAnchor, "BOTTOMRIGHT", -4, 4)
-	MinimapBackdrop:SetSize(MinimapAnchor:GetWidth(), MinimapAnchor:GetWidth())
+    -- Set Minimap size
+    MinimapCluster:SetSize(C.minimap.size, C.minimap.size)
+    Minimap:SetSize(C.minimap.size, C.minimap.size)
+    Minimap:SetAllPoints(MinimapCluster)
+
+    -- Rest of the code...
+    MinimapCluster.Selection:SetSize(C.minimap.size, C.minimap.size)
+
+    -- Hook into Minimap's OnSizeChanged
+    MinimapCluster:HookScript("OnSizeChanged", function(self, width, height)
+        if width ~= C.minimap.size or height ~= C.minimap.size then
+            self:SetSize(C.minimap.size, C.minimap.size)
+        end
+    end)
 
 	-- Instance Difficulty icon
 	MinimapCluster.InstanceDifficulty:SetParent(Minimap)
@@ -268,9 +272,9 @@ Minimap:SetScript("OnMouseWheel", function(_, d)
 end)
 
 -- Hide Game Time
-MinimapAnchor:RegisterEvent("PLAYER_LOGIN")
-MinimapAnchor:RegisterEvent("ADDON_LOADED")
-MinimapAnchor:SetScript("OnEvent", function(_, _, addon)
+MinimapCluster:RegisterEvent("PLAYER_LOGIN")
+MinimapCluster:RegisterEvent("ADDON_LOADED")
+MinimapCluster:SetScript("OnEvent", function(_, _, addon)
 	if addon == "Blizzard_TimeManager" then
 		TimeManagerClockButton:Kill()
 	elseif addon == "Blizzard_HybridMinimap" then
@@ -304,22 +308,22 @@ Minimap:SetQuestBlobRingAlpha(0)
 -- For others mods with a minimap button, set minimap buttons position in square mode
 function GetMinimapShape() return "SQUARE" end
 
-----------------------------------------------------------------------------------------
---	Hide minimap in combat
-----------------------------------------------------------------------------------------
-if C.minimap.hide_combat == true then
-	MinimapAnchor:RegisterEvent("PLAYER_REGEN_ENABLED")
-	MinimapAnchor:RegisterEvent("PLAYER_REGEN_DISABLED")
-	MinimapAnchor:HookScript("OnEvent", function(self, event)
-		if event == "PLAYER_REGEN_ENABLED" then
-			self:Show()
-		elseif event == "PLAYER_REGEN_DISABLED" then
-			if not R.FarmMode then
-				self:Hide()
-			end
-		end
-	end)
-end
+-- ----------------------------------------------------------------------------------------
+-- --	Hide minimap in combat
+-- ----------------------------------------------------------------------------------------
+-- if C.minimap.hide_combat == true then
+-- 	MinimapAnchor:RegisterEvent("PLAYER_REGEN_ENABLED")
+-- 	MinimapAnchor:RegisterEvent("PLAYER_REGEN_DISABLED")
+-- 	MinimapAnchor:HookScript("OnEvent", function(self, event)
+-- 		if event == "PLAYER_REGEN_ENABLED" then
+-- 			self:Show()
+-- 		elseif event == "PLAYER_REGEN_DISABLED" then
+-- 			if not R.FarmMode then
+-- 				self:Hide()
+-- 			end
+-- 		end
+-- 	end)
+-- end
 
 ----------------------------------------------------------------------------------------
 --	Tracking Menu

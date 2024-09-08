@@ -131,7 +131,7 @@ local function Update(self, event, arg1)
 				element:Hide()
 			elseif questType == "LOOT_ITEM" then
 				element.Item:Show()
-				element.Item:SetTexture(940857)
+				element.Item:SetTexture("Interface\\AddOns\\RefineUI\\Media\\Textures\\QuestLoot.blp")
 				element:Hide()
 			end
 		end

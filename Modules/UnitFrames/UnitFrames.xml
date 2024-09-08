@@ -1,6 +1,6 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/">
-    <Script file="Functions.lua"/>
-    <Script file="Elements.lua"/>
+    <Script file="FunctionsTest.lua"/>
+    <Script file="ElementsTest.lua"/>
     <Script file="Player.lua"/>
     <Script file="Target.lua"/>
     <Script file="Focus.lua"/>

@@ -665,7 +665,7 @@ UF.PostCreateIcon = function(element, button)
     button:SetTemplate("Icon")
     button.border:SetFrameStrata("LOW")
 
-    button.remaining = R.SetFontString(button, C.font.auras_font, C.font.auras_font_size, C.font.auras_font_style)
+    button.remaining = R.SetFontString(button, unpack(C.font.unitframes.auras))
     button.remaining:SetPoint("CENTER", button, "CENTER", 1, 1)
     button.remaining:SetJustifyH("CENTER")
 
@@ -676,7 +676,7 @@ UF.PostCreateIcon = function(element, button)
 
     button.Count:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", 1, 3)
     button.Count:SetJustifyH("RIGHT")
-    button.Count:SetFont(C.font.auras_font, C.font.auras_font_size, C.font.auras_font_style)
+    button.Count:SetFont(unpack(C.font.unitframes.aurasCount))
 
     element.disableCooldown = false
     local cooldown = button.Cooldown
