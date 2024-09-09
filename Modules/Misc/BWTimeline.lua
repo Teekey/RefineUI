@@ -546,11 +546,10 @@ function BWT:updatePhase(stage)
         stage = getNumberAfterSpace(stage)
     end
 
-    if (not stage) or (not type(stage) == "number") then
-        return
+    if type(stage) == "number" then
+        self.phase = stage
+        self.phaseCount = (self.phaseCount or 0) + 1  -- Use 0 as default if phaseCount is nil
     end
-    self.phase = stage
-    self.phaseCount = self.phaseCount + 1
 end
 
 ----------------------------------------------------------------------------------------
@@ -574,6 +573,8 @@ end
 
 function BWT:OnInitialize()
     self.encounterID = nil
+    self.phase = 1
+    self.phaseCount = 0  -- Initialize phaseCount here
     self.bigWigs:registerAllMessages()
 
     self:updateTimelineBar()
@@ -639,14 +640,14 @@ function BW:stage(_, stage)
     
     if type(stage) == "number" then
         BWT.phase = stage
-        BWT.phaseCount = BWT.phaseCount + 1
+        BWT.phaseCount = (BWT.phaseCount or 0) + 1  -- Use 0 as default if phaseCount is nil
     end
 end
 
 function BW:onEncounterStart(_, encounterID)
     BWT.encounterID = encounterID
     BWT.phase = 1
-    BWT.phaseCount = 0
+    BWT.phaseCount = 0  -- Ensure phaseCount is reset here
     BWT:initializeCustomTimers()
 end
 

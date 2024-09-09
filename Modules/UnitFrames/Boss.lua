@@ -56,7 +56,7 @@ for i = 1, MAX_BOSS_FRAMES do
     R.SetPixelSize(bossFrames[i], R.frameWidth, R.frameHeight)
 
     if i == 1 then
-        bossFrames[i]:SetPoint("TOPLEFT", bossAnchor, "TOPLEFT", 0, 0)
+        bossFrames[i]:SetPoint("CENTER", bossAnchor, "CENTER", 0, 0)
     else
         bossFrames[i]:SetPoint("TOP", bossFrames[i - 1], "BOTTOM", 0, -BOSS_SPACING)
     end

@@ -26,7 +26,17 @@ local fontstrings = setmetatable({}, {
 	__index = function(t, i)
 		local gslot = _G["Character"..i.."Slot"]
 		local fstr = gslot:CreateFontString(nil, "OVERLAY", "SystemFont_Outline_Small")
-		fstr:SetPoint("BOTTOM", gslot, "BOTTOM", 0, 1)
+		
+		-- Adjust positioning based on the slot
+		if i == "Head" or i == "Shoulder" or i == "Chest" or i == "Wrist" then
+			fstr:SetPoint("LEFT", gslot, "RIGHT", 2, 0)
+		elseif i == "Hands" or i == "Waist" or i == "Legs" or i == "Feet" then
+			fstr:SetPoint("RIGHT", gslot, "LEFT", -2, 0)
+		else
+			-- For MainHand and SecondaryHand, keep the original positioning
+			fstr:SetPoint("BOTTOM", gslot, "BOTTOM", 0, 1)
+		end
+		
 		t[i] = fstr
 		return fstr
 	end,

@@ -462,7 +462,7 @@ function NP.CreateRaidIcon(self, unit)
     --     UnitIsFriend("player", unit) and 0 or 4)
 
 
-    self.RaidTargetIndicator:SetPoint("RIGHT", self.Name, "LEFT", 0, 0)
+    self.RaidTargetIndicator:SetPoint("BOTTOM", self.Name, "TOP", 0, 0)
 end
 
 ----------------------------------------------------------------------------------------

@@ -38,7 +38,7 @@ font.sct = { C.media.normalFont, 10, "OUTLINE" }
 -- Nameplates fonts
 font.nameplates = {
 	default = { C.media.normalFont, 8, "OUTLINE" },
-	name = { C.media.normalFont, 8, "OUTLINE" },
+	name = { C.media.normalFont, 7, "OUTLINE" },
 	title = { C.media.normalFont, 6, "OUTLINE" },
 	health = { C.media.normalFont, 8, "OUTLINE" },
 	spell = { C.media.normalFont, 6, "OUTLINE" },

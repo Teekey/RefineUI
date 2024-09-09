@@ -15,8 +15,8 @@ local LibEasing = LibStub("LibEasing-1.0")
 ----------------------------------------------------------------------------------------
 --	Addon Initialization
 ----------------------------------------------------------------------------------------
-local TKUI_SCT = {}
-TKUI_SCT.frame = CreateFrame("Frame", nil, UIParent)
+local RefineUI_SCT = {}
+RefineUI_SCT.frame = CreateFrame("Frame", nil, UIParent)
 
 -- Disable default floating combat text
 SetCVar("floatingCombatTextCombatDamage", 0)
@@ -220,7 +220,7 @@ local function getFontString()
 
     if C.sct.icon_enable then
         if not fontString.icon then
-            fontString.icon = TKUI_SCT.frame:CreateTexture(nil, "BACKGROUND")
+            fontString.icon = RefineUI_SCT.frame:CreateTexture(nil, "BACKGROUND")
         end
         fontString.icon:SetAlpha(1)
         fontString.icon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
@@ -380,7 +380,7 @@ local function AnimationOnUpdate()
 end
 
 local arcDirection = 1
-function TKUI_SCT:Animate(fontString, anchorFrame, duration, animation)
+function RefineUI_SCT:Animate(fontString, anchorFrame, duration, animation)
     fontString.animation = animation
     fontString.animatingDuration = duration
     fontString.animatingStartTime = GetTime()
@@ -401,21 +401,21 @@ function TKUI_SCT:Animate(fontString, anchorFrame, duration, animation)
 
     animating[fontString] = true
 
-    if not TKUI_SCT.frame:GetScript("OnUpdate") then
-        TKUI_SCT.frame:SetScript("OnUpdate", AnimationOnUpdate)
+    if not RefineUI_SCT.frame:GetScript("OnUpdate") then
+        RefineUI_SCT.frame:SetScript("OnUpdate", AnimationOnUpdate)
     end
 end
 
 ----------------------------------------------------------------------------------------
 --	Event Handlers
 ----------------------------------------------------------------------------------------
-function TKUI_SCT:NAME_PLATE_UNIT_ADDED(_, unitID)
+function RefineUI_SCT:NAME_PLATE_UNIT_ADDED(_, unitID)
     local guid = UnitGUID(unitID)
     unitToGuid[unitID] = guid
     guidToUnit[guid] = unitID
 end
 
-function TKUI_SCT:NAME_PLATE_UNIT_REMOVED(_, unitID)
+function RefineUI_SCT:NAME_PLATE_UNIT_REMOVED(_, unitID)
     local guid = unitToGuid[unitID]
     unitToGuid[unitID] = nil
     guidToUnit[guid] = nil
@@ -519,7 +519,7 @@ local eventHandlers = {
     end
 }
 
-function TKUI_SCT:ShouldProcessEvent(sourceGUID, sourceFlags, destGUID)
+function RefineUI_SCT:ShouldProcessEvent(sourceGUID, sourceFlags, destGUID)
     if C.sct.personal_only and C.sct.personal_enable and playerGUID ~= destGUID then
         return false
     end
@@ -532,7 +532,7 @@ function TKUI_SCT:ShouldProcessEvent(sourceGUID, sourceFlags, destGUID)
     return isPlayerEvent or isPetEvent
 end
 
-function TKUI_SCT:COMBAT_LOG_EVENT_UNFILTERED()
+function RefineUI_SCT:COMBAT_LOG_EVENT_UNFILTERED()
     local timestamp, eventType, hideCaster, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, destRaidFlags =
         CombatLogGetCurrentEventInfo()
 
@@ -550,7 +550,7 @@ local numDamageEvents = 0
 local lastDamageEventTime
 local runningAverageDamageEvents = 0
 
-function TKUI_SCT:DamageEvent(eventData)
+function RefineUI_SCT:DamageEvent(eventData)
     local text, animation, pow, size, alpha
     local autoattack = eventData.spellName == "melee" or eventData.spellName == "pet"
     local isPersonal = eventData.destGUID == playerGUID
@@ -579,7 +579,7 @@ function TKUI_SCT:DamageEvent(eventData)
         size = C.sct.offtarget_size
         alpha = C.sct.offtarget_alpha
     else
-        size = C.font.sct_font_size
+        size = C.font.sct[2]
         alpha = C.sct.alpha
     end
 
@@ -616,7 +616,7 @@ function TKUI_SCT:DamageEvent(eventData)
     end
 end
 
-function TKUI_SCT:FormatDamageText(amount)
+function RefineUI_SCT:FormatDamageText(amount)
     if C.sct.truncate_enable then
         if amount >= POW10[6] and C.sct.truncate_letter then
             return string_format("%.1fM", amount / POW10[6])
@@ -631,7 +631,7 @@ function TKUI_SCT:FormatDamageText(amount)
     return C.sct.truncate_comma and commaSeparate(amount) or tostring(amount)
 end
 
-function TKUI_SCT:HandleSmallHits(amount, crit, size)
+function RefineUI_SCT:HandleSmallHits(amount, crit, size)
     local currentTime = GetTime()
     if not lastDamageEventTime or (lastDamageEventTime + SMALL_HIT.EXPIRY_WINDOW < currentTime) then
         numDamageEvents = 0
@@ -653,7 +653,7 @@ function TKUI_SCT:HandleSmallHits(amount, crit, size)
     return size
 end
 
-function TKUI_SCT:MissEvent(guid, spellName, missType, spellId)
+function RefineUI_SCT:MissEvent(guid, spellName, missType, spellId)
     local text, animation, pow, size, alpha, color
     local isPersonal = guid == playerGUID
 
@@ -670,13 +670,17 @@ function TKUI_SCT:MissEvent(guid, spellName, missType, spellId)
         size = C.sct.offtarget_size
         alpha = C.sct.offtarget_alpha
     else
-        size = C.font.sct_font_size
+        size = C.font.sct[2]
         alpha = C.sct.alpha
     end
 
+    -- Ensure size is a number and has a minimum value
+    size = tonumber(size) or C.font.sct[2]
+    size = math.max(size, 5)
+
     -- Adjust miss size using lookup table
     if C.sct.size_miss and not isPersonal then
-        size = size * SIZE_MULTIPLIERS.miss
+        size = size * (SIZE_MULTIPLIERS.miss or 1)
     end
 
     pow = true
@@ -687,7 +691,7 @@ function TKUI_SCT:MissEvent(guid, spellName, missType, spellId)
     self:DisplayText(guid, text, size, animation, spellId, pow, spellName)
 end
 
-function TKUI_SCT:DisplayText(guid, text, size, animation, spellId, pow, spellName)
+function RefineUI_SCT:DisplayText(guid, text, size, animation, spellId, pow, spellName)
     local fontString = getFontString()
     local unit = guidToUnit[guid]
     local nameplate = unit and C_NamePlate.GetNamePlateForUnit(unit) or (playerGUID == guid and "player")
@@ -728,7 +732,7 @@ function TKUI_SCT:DisplayText(guid, text, size, animation, spellId, pow, spellNa
         end
         
         if texture then
-            local icon = fontString.icon or TKUI_SCT.frame:CreateTexture(nil, "BACKGROUND")
+            local icon = fontString.icon or RefineUI_SCT.frame:CreateTexture(nil, "BACKGROUND")
             icon:Show()
             icon:SetTexture(texture)
             icon:SetSize(size * C.sct.icon_scale, size * C.sct.icon_scale)
@@ -744,7 +748,7 @@ function TKUI_SCT:DisplayText(guid, text, size, animation, spellId, pow, spellNa
     self:Animate(fontString, nameplate, C.sct.animations_speed, animation)
     end
     
-    function TKUI_SCT:DisplayTextOverkill(guid, text, size, animation, spellId, pow, spellName)
+    function RefineUI_SCT:DisplayTextOverkill(guid, text, size, animation, spellId, pow, spellName)
         self:DisplayText(guid, text, size, animation, spellId, pow, spellName)
     end
     
@@ -754,17 +758,17 @@ function TKUI_SCT:DisplayText(guid, text, size, animation, spellId, pow, spellNa
             "ffffff"
     end
     
-    function TKUI_SCT:ColorText(startingText, guid, school, spellName)
+    function RefineUI_SCT:ColorText(startingText, guid, school, spellName)
         return string_format("|Cff%s%s|r", getColor(guid, school, spellName), startingText)
     end
     
     ----------------------------------------------------------------------------------------
     --	Initialization
     ----------------------------------------------------------------------------------------
-    function TKUI_SCT:Init()
+    function RefineUI_SCT:Init()
         -- Setup db
-        TKUI_SCTDB = TKUI_SCTDB or {}
-        self.db = TKUI_SCTDB
+        RefineUI_SCTDB = RefineUI_SCTDB or {}
+        self.db = RefineUI_SCTDB
     
         -- If the addon is turned off in db, turn it off
         if C.sct.enable == false then
@@ -786,9 +790,9 @@ function TKUI_SCT:DisplayText(guid, text, size, animation, spellId, pow, spellNa
         end
     end
     
-    function TKUI_SCT:Disable()
+    function RefineUI_SCT:Disable()
         -- Implement disable logic here
     end
     
     -- Initialize the addon
-    TKUI_SCT:Init()
+    RefineUI_SCT:Init()

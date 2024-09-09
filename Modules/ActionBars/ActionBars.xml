@@ -2,5 +2,5 @@
 	<Script file="Status.lua"/>
 	<Script file="Cooldowns.lua"/>
 	<Script file="ExtraBar.lua"/>
-	<Script file="Test.lua"/>
+	<Script file="ActionBars.lua"/>
 </Ui>
