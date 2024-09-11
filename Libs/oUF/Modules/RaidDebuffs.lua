@@ -1,6 +1,4 @@
 local R, C, L = unpack(RefineUI)
-do return end
--- if C.raidframe.plugins_aura_watch ~= true then return end
 
 ----------------------------------------------------------------------------------------
 --	Based on oUF_RaidDebuffs(by Yleaf)
@@ -15,22 +13,22 @@ local auraFilters = {
 }
 
 local DispellColor = {
-	["Magic"]	= {0.2, 0.6, 1},
-	["Curse"]	= {0.6, 0, 1},
-	["Disease"]	= {0.6, 0.4, 0},
-	["Poison"]	= {0, 0.6, 0},
-	["none"]	= {unpack(C.media.borderColor)},
+	["Magic"] = { 0.2, 0.6, 1 },
+	["Curse"] = { 0.6, 0, 1 },
+	["Disease"] = { 0.6, 0.4, 0 },
+	["Poison"] = { 0, 0.6, 0 },
+	["none"] = { 0.5, 0.5, 0.5 },
 }
 
-if C.auras.debuff_color_type == true then
-	DispellColor.none = {1, 0, 0}
-end
+
+-- DispellColor.none = { 1, 0, 0 }
+
 
 local DispellPriority = {
-	["Magic"]	= 4,
-	["Curse"]	= 3,
-	["Disease"]	= 2,
-	["Poison"]	= 1,
+	["Magic"] = 4,
+	["Curse"] = 3,
+	["Disease"] = 2,
+	["Poison"] = 1,
 }
 
 local DispellFilter = R.CanDispel[R.class] or {}
@@ -141,9 +139,9 @@ local UpdateDebuffFrame = function(rd, icon, count, debuffType, duration, expira
 		end
 
 		local c = DispellColor[debuffType] or DispellColor.none
-		if C.auras.debuff_color_type == true then
-			rd:SetBackdropBorderColor(c[1], c[2], c[3])
-		end
+
+		rd.border:SetBackdropBorderColor(c[1], c[2], c[3])
+		-- rd.__owner.border:SetColorTexture(c[1], c[2], c[3])
 
 		if not rd:IsShown() then
 			rd:Show()
@@ -152,6 +150,8 @@ local UpdateDebuffFrame = function(rd, icon, count, debuffType, duration, expira
 		if rd:IsShown() then
 			rd:Hide()
 		end
+		-- rd.__owner.border:SetColorTexture(DispellColor.none[1], DispellColor.none[2], DispellColor.none[3])
+
 	end
 end
 
@@ -163,9 +163,10 @@ local Update = function(self, _, unit)
 
 	for filter in next, (rd.Filters or auraFilters) do
 		local i = 0
-		while(true) do
+		while (true) do
 			i = i + 1
-			local name, icon, count, debuffType, duration, expirationTime, _, _, _, spellId, _, isBossDebuff = UnitAura(unit, i, filter)
+			local name, icon, count, debuffType, duration, expirationTime, _, _, _, spellId, _, isBossDebuff = UnitAura(
+				unit, i, filter)
 			if not name then break end
 
 			if rd.ShowBossDebuff and isBossDebuff then
@@ -175,7 +176,8 @@ local Update = function(self, _, unit)
 					rd.index = i
 					rd.type = "Boss"
 					rd.filter = filter
-					_icon, _count, _debuffType, _duration, _expirationTime, _spellId = icon, count, debuffType, duration, expirationTime, spellId
+					_icon, _count, _debuffType, _duration, _expirationTime, _spellId = icon, count, debuffType, duration,
+						expirationTime, spellId
 				end
 			end
 
@@ -195,7 +197,8 @@ local Update = function(self, _, unit)
 					rd.index = i
 					rd.type = "Dispel"
 					rd.filter = filter
-					_icon, _count, _debuffType, _duration, _expirationTime, _spellId = icon, count, debuffType, duration, expirationTime, spellId
+					_icon, _count, _debuffType, _duration, _expirationTime, _spellId = icon, count, debuffType, duration,
+						expirationTime, spellId
 				end
 			end
 
@@ -205,7 +208,8 @@ local Update = function(self, _, unit)
 				rd.index = i
 				rd.type = "Custom"
 				rd.filter = filter
-				_icon, _count, _debuffType, _duration, _expirationTime, _spellId = icon, count, debuffType, duration, expirationTime, spellId
+				_icon, _count, _debuffType, _duration, _expirationTime, _spellId = icon, count, debuffType, duration,
+					expirationTime, spellId
 			end
 		end
 	end
@@ -220,11 +224,11 @@ local Update = function(self, _, unit)
 end
 
 local Path = function(self, ...)
-	return (self.RaidDebuffs.Override or Update) (self, ...)
+	return (self.RaidDebuffs.Override or Update)(self, ...)
 end
 
 local ForceUpdate = function(element)
-	return Path(elemenR.__owner, "ForceUpdate", elemenR.__owner.unit)
+	return Path(element.__owner, "ForceUpdate", element.__owner.unit)
 end
 
 local Enable = function(self)

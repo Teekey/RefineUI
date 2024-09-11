@@ -11,7 +11,7 @@ if C.combatcursor.enable ~= true then return end
 ----------------------------------------------------------------------------------------
 
 local combatCursor = CreateFrame("Frame", nil, UIParent)
-combatCursor:SetFrameStrata("BACKGROUND")
+combatCursor:SetFrameStrata("DIALOG")
 combatCursor:SetWidth(C.combatcursor.size)
 combatCursor:SetHeight(C.combatcursor.size)
 combatCursor:Hide()

@@ -907,44 +907,29 @@ UF.CreateAuraWatch = function(self, buffs, name, anchorPoint, size, filter, reve
         icon.strictMatching = spell[5]
         icon:SetSize(size / 2 - 1, size / 2 - 1)
 
-        -- Set frame level for each icon
-        -- icon:SetFrameLevel(auras:GetFrameLevel() + 1)
-
         icon:SetTemplate("Icon")
         icon.border:SetFrameStrata("LOW")
 
         local borderColor = spell[2] or C.media.borderColor
         icon.border:SetBackdropBorderColor(unpack(borderColor))
 
+        -- Create and set up the icon texture
+        icon.texture = icon:CreateTexture(nil, "ARTWORK")
+        icon.texture:SetAllPoints(icon)
+        icon.texture:SetTexCoord(0.1, 0.9, 0.1, 0.9)
 
-        -- local texFrame = CreateFrame("Frame", nil, icon)
-        -- texFrame:SetAllPoints(icon)
-        -- texFrame:SetFrameLevel(icon:GetFrameLevel() + 1)
-
-        -- local tex = texFrame:CreateTexture(nil, "OVERLAY")
-        -- tex:SetSize(size / 2 - 7, size / 2 - 7)
-        -- tex:SetPoint("CENTER", texFrame, "CENTER", 0, 0)
-        -- icon.icon = tex
-
-        -- local spellTexture = C_Spell.GetSpellTexture(icon.spellID)
-        -- if spellTexture then
-        --     icon:SetTexture(spellTexture)
-        --     icon:SetTexCoord(0.1, 0.9, 0.1, 0.9)
-        -- end
-
-        -- local count = UF.SetFontString(icon, C.font.unit_frames_font, C.font.unit_frames_font_size,
-        -- 	C.font.unit_frames_font_style)
-        -- count:SetPoint("CENTER", icon, "CENTER", 0, 0)
-        -- icon.count = count
+        -- Set the spell texture
+        local spellTexture = C_Spell.GetSpellTexture(icon.spellID)
+        if spellTexture then
+            icon.texture:SetTexture(spellTexture)
+        end
 
         -- Create cooldown frame
-        -- icon.cooldown = CreateFrame("Cooldown", nil, icon, "CooldownFrameTemplate")
-        -- icon.cooldown:SetPoint("TOPLEFT", icon, "TOPLEFT", -2, 2)
-        -- icon.cooldown:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 2, -2)
-        -- icon.cooldown:SetReverse(true)  -- Set to reverse if desired
-        -- icon.cooldown.noCooldownCount = true  -- Disable the default cooldown count
-        -- icon.cooldown:SetFrameLevel(icon:GetFrameLevel() + 10)
-
+        icon.cooldown = CreateFrame("Cooldown", nil, icon, "CooldownFrameTemplate")
+        icon.cooldown:SetAllPoints(icon)
+        icon.cooldown:SetReverse(true)
+        icon.cooldown:SetDrawEdge(false)
+        icon.cooldown:SetSwipeColor(0, 0, 0, 0.8)
 
         icon:Hide() -- Hide all icons initially
 
@@ -970,7 +955,7 @@ UF.CreateAuraWatch = function(self, buffs, name, anchorPoint, size, filter, reve
                     end
                     watchIcon.expirationTime = expirationTime
                     watchIcon.duration = duration
-                    -- watchIcon.cooldown:SetCooldown(expirationTime - duration, duration)  -- Set cooldown here
+                    watchIcon.cooldown:SetCooldown(expirationTime - duration, duration)
                     watchIcon:SetScript("OnUpdate", UF.UpdateAuraTimer)
                     table.insert(visibleIcons, watchIcon)
                 end

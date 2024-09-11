@@ -16,20 +16,16 @@ local itemLevelDisplay = function(frame, itemLevel, itemLink)
         local quality = 1  -- Default to common quality
         
         if itemLink then
-            local itemID = C_Item.GetItemInfoInstant(itemLink)
-            if itemID then
-                quality = C_Item.GetItemQualityByID(itemID) or 1
-            end
+            quality = select(3, C_Item.GetItemInfo(itemLink)) or 1
         elseif frame.itemLink then
-            local itemID = C_Item.GetItemInfoInstant(frame.itemLink)
-            if itemID then
-                quality = C_Item.GetItemQualityByID(itemID) or 1
-            end
+            quality = select(3, C_Item.GetItemInfo(frame.itemLink)) or 1
         end
         
         local r, g, b = C_Item.GetItemQualityColor(quality)
         text:SetText(itemLevel)
         text:SetTextColor(r, g, b)
+        text:SetShadowOffset(1, -1)
+        text:SetShadowColor(0, 0, 0, 1)
         text:Show()
         return true
     else

@@ -1,3 +1,75 @@
+--[[
+# Element: Auras
+
+Handles creation and updating of aura buttons.
+
+## Widget
+
+Auras   - A Frame to hold `Button`s representing both buffs and debuffs.
+Buffs   - A Frame to hold `Button`s representing buffs.
+Debuffs - A Frame to hold `Button`s representing debuffs.
+
+## Notes
+
+At least one of the above widgets must be present for the element to work.
+
+## Options
+
+.disableMouse             - Disables mouse events (boolean)
+.disableCooldown          - Disables the cooldown spiral (boolean)
+.size                     - Aura button size. Defaults to 16 (number)
+.width                    - Aura button width. Takes priority over `size` (number)
+.height                   - Aura button height. Takes priority over `size` (number)
+.onlyShowPlayer           - Shows only auras created by player/vehicle (boolean)
+.showStealableBuffs       - Displays the stealable texture on buffs that can be stolen (boolean)
+.spacing                  - Spacing between each button. Defaults to 0 (number)
+.['spacing-x']            - Horizontal spacing between each button. Takes priority over `spacing` (number)
+.['spacing-y']            - Vertical spacing between each button. Takes priority over `spacing` (number)
+.['growth-x']             - Horizontal growth direction. Defaults to 'RIGHT' (string)
+.['growth-y']             - Vertical growth direction. Defaults to 'UP' (string)
+.initialAnchor            - Anchor point for the aura buttons. Defaults to 'BOTTOMLEFT' (string)
+.filter                   - Custom filter list for auras to display. Defaults to 'HELPFUL' for buffs and 'HARMFUL' for
+                            debuffs (string)
+.tooltipAnchor            - Anchor point for the tooltip. Defaults to 'ANCHOR_BOTTOMRIGHT', however, if a frame has
+                            anchoring restrictions it will be set to 'ANCHOR_CURSOR' (string)
+.reanchorIfVisibleChanged - Reanchors aura buttons when the number of visible auras has changed (boolean)
+
+## Options Auras
+
+.numBuffs     - The maximum number of buffs to display. Defaults to 32 (number)
+.numDebuffs   - The maximum number of debuffs to display. Defaults to 40 (number)
+.numTotal     - The maximum number of auras to display. Prioritizes buffs over debuffs. Defaults to the sum of
+                .numBuffs and .numDebuffs (number)
+.gap          - Controls the creation of an invisible button between buffs and debuffs. Defaults to false (boolean)
+.buffFilter   - Custom filter list for buffs to display. Takes priority over `filter` (string)
+.debuffFilter - Custom filter list for debuffs to display. Takes priority over `filter` (string)
+
+## Options Buffs
+
+.num - Number of buffs to display. Defaults to 32 (number)
+
+## Options Debuffs
+
+.num - Number of debuffs to display. Defaults to 40 (number)
+
+## Attributes
+
+button.caster         - the unit who cast the aura (string)
+button.filter         - the filter list used to determine the visibility of the aura (string)
+button.isHarmful      - indicates if the button holds a debuff (boolean)
+button.auraInstanceID - unique ID for the current aura being tracked by the button (number)
+
+## Examples
+
+    -- Position and size
+    local Buffs = CreateFrame('Frame', nil, self)
+    Buffs:SetPoint('RIGHT', self, 'LEFT')
+    Buffs:SetSize(16 * 2, 16 * 16)
+
+    -- Register with oUF
+    self.Buffs = Buffs
+--]]
+
 local _, ns = ...
 local oUF = ns.oUF
 
@@ -32,7 +104,6 @@ local function CreateButton(element, index)
 
 	local cd = CreateFrame('Cooldown', '$parentCooldown', button, 'CooldownFrameTemplate')
 	cd:SetAllPoints()
-	cd:SetDrawEdge(false) -- RefineUI
 	button.Cooldown = cd
 
 	local icon = button:CreateTexture(nil, 'BORDER')
@@ -165,7 +236,7 @@ local function updateAura(element, unit, data, position)
 	* self     - the widget holding the aura buttons
 	* button   - the updated aura button (Button)
 	* unit     - the unit for which the update has been triggered (string)
-	* data     - the [UnitAuraInfo](https://wowpedia.fandom.com/wiki/Struct_UnitAuraInfo) object (table)
+	* data     - the [AuraData](https://warcraft.wiki.gg/wiki/Struct_AuraData) object (table)
 	* position - the actual position of the aura button (number)
 	--]]
 	if(element.PostUpdateButton) then
@@ -202,7 +273,7 @@ local function processData(element, unit, data)
 
 	* self - the widget holding the aura buttons
 	* unit - the unit for which the update has been triggered (string)
-	* data - [UnitAuraInfo](https://wowpedia.fandom.com/wiki/Struct_UnitAuraInfo) object (table)
+	* data - [AuraData](https://warcraft.wiki.gg/wiki/Struct_AuraData) object (table)
 
 	## Returns
 
@@ -262,7 +333,7 @@ local function UpdateAuras(self, event, unit, updateInfo)
 
 				* self - the widget holding the aura buttons
 				* unit - the unit for which the update has been triggered (string)
-				* data - [UnitAuraInfo](https://wowpedia.fandom.com/wiki/Struct_UnitAuraInfo) object (table)
+				* data - [AuraData](https://warcraft.wiki.gg/wiki/Struct_AuraData) object (table)
 
 				## Returns
 
@@ -378,12 +449,12 @@ local function UpdateAuras(self, event, unit, updateInfo)
 				--[[ Override: Auras:SortBuffs(a, b)
 				Defines a custom sorting algorithm for ordering the auras.
 
-				Defaults to [AuraUtil.DefaultAuraCompare](https://github.com/Gethe/wow-ui-source/search?q=DefaultAuraCompare).
+				Defaults to [AuraUtil.DefaultAuraCompare](https://github.com/Gethe/wow-ui-source/search?q=symbol:DefaultAuraCompare).
 				--]]
 				--[[ Override: Auras:SortAuras(a, b)
 				Defines a custom sorting algorithm for ordering the auras.
 
-				Defaults to [AuraUtil.DefaultAuraCompare](https://github.com/Gethe/wow-ui-source/search?q=DefaultAuraCompare).
+				Defaults to [AuraUtil.DefaultAuraCompare](https://github.com/Gethe/wow-ui-source/search?q=symbol:DefaultAuraCompare).
 
 				Overridden by the more specific SortBuffs and/or SortDebuffs overrides if they are defined.
 				--]]
@@ -409,7 +480,7 @@ local function UpdateAuras(self, event, unit, updateInfo)
 				--[[ Override: Auras:SortDebuffs(a, b)
 				Defines a custom sorting algorithm for ordering the auras.
 
-				Defaults to [AuraUtil.DefaultAuraCompare](https://github.com/Gethe/wow-ui-source/search?q=DefaultAuraCompare).
+				Defaults to [AuraUtil.DefaultAuraCompare](https://github.com/Gethe/wow-ui-source/search?q=symbol:DefaultAuraCompare).
 				--]]
 				table.sort(auras.sortedDebuffs, auras.SortDebuffs or auras.SortAuras or SortAuras)
 			end
@@ -441,7 +512,7 @@ local function UpdateAuras(self, event, unit, updateInfo)
 					if(button.Count) then button.Count:SetText() end
 
 					button:EnableMouse(false)
-					button:Hide()	-- RefineUI
+					button:Show()
 
 					--[[ Callback: Auras:PostUpdateGapButton(unit, gapButton, position)
 					Called after an invisible aura button has been created. Only used by Auras when the `gap` option is enabled.
@@ -767,7 +838,7 @@ local function Enable(self)
 			auras.visibleButtons = 0
 			auras.tooltipAnchor = auras.tooltipAnchor or 'ANCHOR_BOTTOMRIGHT'
 
-			-- auras:Show() -- RefineUI
+			auras:Show()
 		end
 
 		local buffs = self.Buffs
@@ -782,7 +853,7 @@ local function Enable(self)
 			buffs.visibleButtons = 0
 			buffs.tooltipAnchor = buffs.tooltipAnchor or 'ANCHOR_BOTTOMRIGHT'
 
-			-- buffs:Show() -- RefineUI
+			buffs:Show()
 		end
 
 		local debuffs = self.Debuffs
@@ -797,7 +868,7 @@ local function Enable(self)
 			debuffs.visibleButtons = 0
 			debuffs.tooltipAnchor = debuffs.tooltipAnchor or 'ANCHOR_BOTTOMRIGHT'
 
-			-- debuffs:Show() -- RefineUI
+			debuffs:Show()
 		end
 
 		return true

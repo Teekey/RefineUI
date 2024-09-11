@@ -1,3 +1,27 @@
+--[[
+# Element: Leader Indicator
+
+Toggles the visibility of an indicator based on the unit's leader status.
+
+## Widget
+
+LeaderIndicator - A `Texture` used to display if the unit is a leader.
+
+## Notes
+
+This element updates by changing the texture.
+
+## Examples
+
+    -- Position and size
+    local LeaderIndicator = self:CreateTexture(nil, 'OVERLAY')
+    LeaderIndicator:SetSize(16, 16)
+    LeaderIndicator:SetPoint('BOTTOM', self, 'TOP')
+
+    -- Register it with oUF
+    self.LeaderIndicator = LeaderIndicator
+--]]
+
 local _, ns = ...
 local oUF = ns.oUF
 
@@ -27,11 +51,11 @@ local function Update(self, event)
 	local isLeader = UnitIsGroupLeader(unit)
 	if(isLeader) then
 		if(isInLFGInstance) then
-			element:SetTexture([[Interface\AddOns\RefineUI\Media\Textures\Leader.tga]])
-			-- element:SetTexCoord(0, 0.296875, 0.015625, 0.3125)
+			element:SetTexture([[Interface\AddOns\TKUI\Media\Textures\Leader.tga]])
+			element:SetTexCoord(0, 0.296875, 0.015625, 0.3125)
 		else
-			element:SetTexture([[Interface\AddOns\RefineUI\Media\Textures\Leader.tga]])
-			-- element:SetTexCoord(0, 1, 0, 1)
+			element:SetTexture([[Interface\AddOns\TKUI\Media\Textures\Leader.tga]])
+			element:SetTexCoord(0, 1, 0, 1)
 		end
 
 		element:Show()

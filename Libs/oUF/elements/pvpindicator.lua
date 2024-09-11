@@ -32,8 +32,8 @@ The `Badge` sub-widget has to be on a lower sub-layer than the `PvP` texture.
     self.PvPIndicator = PvPIndicator
 --]]
 
-local R, C, L = unpack(RefineUI)
-local oUF = R.oUF
+local _, ns = ...
+local oUF = ns.oUF
 
 local function Update(self, event, unit)
 	if(unit and unit ~= self.unit) then return end

@@ -70,7 +70,7 @@ function BWT:updateTimelineBar()
     bar:ClearAllPoints()
     bar:SetPoint("CENTER", anchor)
     bar:SetSize(C.bwtimeline.bar_width, C.bwtimeline.bar_length)
-    bar:SetTemplate("Transparent")
+    -- bar:SetTemplate("Transparent")
 
     bar.startAnchor = C.bwtimeline.bar_reverse and "BOTTOM" or "TOP"
     bar.endAnchor = C.bwtimeline.bar_reverse and "TOP" or "BOTTOM"
@@ -291,7 +291,7 @@ function BWT:createTimelineIcon(spellID, name, duration, iconID, customSettings)
     frame:SetParent(bar)
     frame:SetFrameLevel(bar:GetFrameLevel() + 4)
     frame:SetScript("OnUpdate", frameOnUpdate)
-    frame:SetTemplate("Transparent")
+    frame:SetTemplate("Icon")
     frame:Show()
 end
 

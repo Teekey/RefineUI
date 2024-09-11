@@ -1,11 +1,66 @@
+--[[
+# Element: Power Prediction Bar
+
+Handles the visibility and updating of power cost prediction.
+
+## Widget
+
+PowerPrediction - A `table` containing the sub-widgets.
+
+## Sub-Widgets
+
+mainBar - A `StatusBar` used to represent power cost of spells on top of the Power element.
+altBar  - A `StatusBar` used to represent power cost of spells on top of the AdditionalPower element.
+
+## Notes
+
+A default texture will be applied if the widget is a StatusBar and doesn't have a texture set.
+
+## Examples
+
+    -- Position and size
+    local mainBar = CreateFrame('StatusBar', nil, self.Power)
+    mainBar:SetReverseFill(true)
+    mainBar:SetPoint('TOP')
+    mainBar:SetPoint('BOTTOM')
+    mainBar:SetPoint('RIGHT', self.Power:GetStatusBarTexture(), 'RIGHT')
+    mainBar:SetWidth(200)
+
+    local altBar = CreateFrame('StatusBar', nil, self.AdditionalPower)
+    altBar:SetReverseFill(true)
+    altBar:SetPoint('TOP')
+    altBar:SetPoint('BOTTOM')
+    altBar:SetPoint('RIGHT', self.AdditionalPower:GetStatusBarTexture(), 'RIGHT')
+    altBar:SetWidth(200)
+
+    -- Register with oUF
+    self.PowerPrediction = {
+        mainBar = mainBar,
+        altBar = altBar
+    }
+--]]
+
 local _, ns = ...
 local oUF = ns.oUF
 
--- sourced from FrameXML/AlternatePowerBar.lua
+-- sourced from Blizzard_UnitFrame/AlternatePowerBar.lua
 local ALT_POWER_BAR_PAIR_DISPLAY_INFO = _G.ALT_POWER_BAR_PAIR_DISPLAY_INFO
+
 local ADDITIONAL_POWER_BAR_INDEX = 0
 
 local _, playerClass = UnitClass('player')
+
+local function UpdateSize(self, event, unit)
+	local element = self.PowerPrediction
+
+	if(element.mainBar and element.mainSize) then
+		element.mainBar[element.isMainHoriz and 'SetWidth' or 'SetHeight'](element.mainBar, element.mainSize)
+	end
+
+	if(element.altBar and element.altSize) then
+		element.altBar[element.isAltHoriz and 'SetWidth' or 'SetHeight'](element.altBar, element.altSize)
+	end
+end
 
 local function Update(self, event, unit)
 	if(self.unit ~= unit) then return end
@@ -29,7 +84,9 @@ local function Update(self, event, unit)
 	local mainCost, altCost = 0, 0
 
 	if(event == 'UNIT_SPELLCAST_START' and startTime ~= endTime) then
-		local costTable = GetSpellPowerCost(spellID)
+		local costTable = C_Spell.GetSpellPowerCost(spellID)
+		if(not costTable) then return end
+
 		-- hasRequiredAura is always false if there's only 1 subtable
 		local checkRequiredAura = #costTable > 1
 
@@ -84,7 +141,45 @@ local function Update(self, event, unit)
 	end
 end
 
+local function shouldUpdateMainSize(self)
+	if(not self.Power) then return end
+
+	local isHoriz = self.Power:GetOrientation() == 'HORIZONTAL'
+	local newSize = self.Power[isHoriz and 'GetWidth' or 'GetHeight'](self.Power)
+	if(isHoriz ~= self.PowerPrediction.isMainHoriz or newSize ~= self.PowerPrediction.mainSize) then
+		self.PowerPrediction.isMainHoriz = isHoriz
+		self.PowerPrediction.mainSize = newSize
+
+		return true
+	end
+end
+
+local function shouldUpdateAltSize(self)
+	if(not self.AdditionalPower) then return end
+
+	local isHoriz = self.AdditionalPower:GetOrientation() == 'HORIZONTAL'
+	local newSize = self.AdditionalPower[isHoriz and 'GetWidth' or 'GetHeight'](self.AdditionalPower)
+	if(isHoriz ~= self.PowerPrediction.isAltHoriz or newSize ~= self.PowerPrediction.altSize) then
+		self.PowerPrediction.isAltHoriz = isHoriz
+		self.PowerPrediction.altSize = newSize
+
+		return true
+	end
+end
+
 local function Path(self, ...)
+	--[[ Override: PowerPrediction.UpdateSize(self, event, unit, ...)
+	Used to completely override the internal function for updating the widgets' size.
+
+	* self  - the parent object
+	* event - the event triggering the update (string)
+	* unit  - the unit accompanying the event (string)
+	* ...   - the arguments accompanying the event
+	--]]
+	if(shouldUpdateMainSize(self) or shouldUpdateAltSize(self)) then
+		(self.PowerPrediction.UpdateSize or UpdateSize) (self, ...)
+	end
+
 	--[[ Override: PowerPrediction.Override(self, event, unit, ...)
 	Used to completely override the internal update function.
 

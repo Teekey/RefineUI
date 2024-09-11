@@ -30,6 +30,9 @@ R.RaidBuffs = {
 		{ 395296, { 0.14, 1.00, 0.88 } }, -- Ebon Might
 		{ 406732, { 0.82, 0.29, 0.24 } }, -- Spatial Paradox < on yourself
 	},
+	MAGE    = {
+		{ 1459, { 0.2, 0.7, 0.7 } }, -- Renewing Mist
+	},
 	MONK    = {
 		{ 119611, { 0.2, 0.7, 0.7 } }, -- Renewing Mist
 		{ 116841, { 0.12, 1.00, 0.53 } }, -- Tiger's Lust (Freedom)

@@ -162,16 +162,16 @@ function NP.CreateHealthBar(self)
     self:Tag(self.Health.value, "[NameplateHealth]")
 
     -- Register events for threat updates
-    self.Health:RegisterEvent("PLAYER_REGEN_DISABLED")
-    self.Health:RegisterEvent("PLAYER_REGEN_ENABLED")
-    self.Health:RegisterEvent("UNIT_THREAT_SITUATION_UPDATE")
-    self.Health:RegisterEvent("UNIT_THREAT_LIST_UPDATE")
-    self.Health:RegisterEvent("UNIT_HEALTH")
-    self.Health:SetScript("OnEvent", function()
-        if C.nameplate.enhance_threat then
-            NP.UpdateThreat(self)
-        end
-    end)
+    -- self.Health:RegisterEvent("PLAYER_REGEN_DISABLED")
+    -- self.Health:RegisterEvent("PLAYER_REGEN_ENABLED")
+    -- self.Health:RegisterEvent("UNIT_THREAT_SITUATION_UPDATE")
+    -- self.Health:RegisterEvent("UNIT_THREAT_LIST_UPDATE")
+    -- self.Health:RegisterEvent("UNIT_HEALTH")
+    -- self.Health:SetScript("OnEvent", function()
+    --     if C.nameplate.enhanceThreat then
+    --         NP.UpdateThreat(self)
+    --     end
+    -- end)
 
     self.Health.PostUpdate = NP.HealthPostUpdate
 
@@ -296,7 +296,7 @@ function NP.CreatePortraitAndQuestIcon(self)
     self.CombinedPortrait = portrait
     self.CombinedPortrait.Text = QuestText
     self.CombinedPortrait.radialStatusbar = radialStatusBar
-    self.BorderTexture = BorderTexture
+    self.PortraitBorder = BorderTexture
     self.PortraitFrame = PortraitFrame
     self.PortraitGlow = PortraitGlow
 

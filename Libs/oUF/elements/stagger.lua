@@ -1,39 +1,72 @@
+--[[
+# Element: Monk Stagger Bar
+
+Handles the visibility and updating of the Monk's stagger bar.
+
+## Widget
+
+Stagger - A `StatusBar` used to represent the current stagger level.
+
+## Sub-Widgets
+
+.bg - A `Texture` used as a background. It will inherit the color of the main StatusBar.
+
+## Notes
+
+A default texture will be applied if the widget is a StatusBar and doesn't have a texture set.
+
+## Sub-Widgets Options
+
+.multiplier - Used to tint the background based on the main widgets R, G and B values. Defaults to 1 (number)[0-1]
+
+## Examples
+
+    local Stagger = CreateFrame('StatusBar', nil, self)
+    Stagger:SetSize(120, 20)
+    Stagger:SetPoint('TOPLEFT', self, 'BOTTOMLEFT', 0, 0)
+
+    -- Register with oUF
+    self.Stagger = Stagger
+--]]
+
 if(select(2, UnitClass('player')) ~= 'MONK') then return end
 
 local _, ns = ...
 local oUF = ns.oUF
 
--- sourced from FrameXML/Constants.lua
-local SPEC_MONK_BREWMASTER = SPEC_MONK_BREWMASTER or 1
+-- sourced from Blizzard_FrameXMLBase/Constants.lua
+local SPEC_MONK_BREWMASTER = _G.SPEC_MONK_BREWMASTER or 1
 
--- sourced from FrameXML/MonkStaggerBar.lua
-local BREWMASTER_POWER_BAR_NAME = BREWMASTER_POWER_BAR_NAME or 'STAGGER'
+local BREWMASTER_POWER_BAR_NAME = 'STAGGER'
 
 -- percentages at which bar should change color
-local STAGGER_YELLOW_TRANSITION =  STAGGER_YELLOW_TRANSITION or 0.3
-local STAGGER_RED_TRANSITION = STAGGER_RED_TRANSITION or 0.6
+local STAGGER_YELLOW_TRANSITION =  _G.STAGGER_YELLOW_TRANSITION or 0.3
+local STAGGER_RED_TRANSITION = _G.STAGGER_RED_TRANSITION or 0.6
 
 -- table indices of bar colors
-local STAGGER_GREEN_INDEX = STAGGER_GREEN_INDEX or 1
-local STAGGER_YELLOW_INDEX = STAGGER_YELLOW_INDEX or 2
-local STAGGER_RED_INDEX = STAGGER_RED_INDEX or 3
+local STAGGER_GREEN_INDEX = _G.STAGGER_GREEN_INDEX or 1
+local STAGGER_YELLOW_INDEX = _G.STAGGER_YELLOW_INDEX or 2
+local STAGGER_RED_INDEX = _G.STAGGER_RED_INDEX or 3
 
-local function UpdateColor(element, cur, max)
-	local colors = element.__owner.colors.power[BREWMASTER_POWER_BAR_NAME]
-	local perc = cur / max
+local function UpdateColor(self, event, unit)
+	if(unit and unit ~= self.unit) then return end
+	local element = self.Stagger
 
-	local t
+	local colors = self.colors.power[BREWMASTER_POWER_BAR_NAME]
+	local perc = (element.cur or 0) / (element.max or 1)
+
+	local color
 	if(perc >= STAGGER_RED_TRANSITION) then
-		t = colors and colors[STAGGER_RED_INDEX]
+		color = colors and colors[STAGGER_RED_INDEX]
 	elseif(perc > STAGGER_YELLOW_TRANSITION) then
-		t = colors and colors[STAGGER_YELLOW_INDEX]
+		color = colors and colors[STAGGER_YELLOW_INDEX]
 	else
-		t = colors and colors[STAGGER_GREEN_INDEX]
+		color = colors and colors[STAGGER_GREEN_INDEX]
 	end
 
 	local r, g, b
-	if(t) then
-		r, g, b = t[1], t[2], t[3]
+	if(color) then
+		r, g, b = color[1], color[2], color[3]
 		if(b) then
 			element:SetStatusBarColor(r, g, b)
 
@@ -43,6 +76,18 @@ local function UpdateColor(element, cur, max)
 				bg:SetVertexColor(r * mu, g * mu, b * mu)
 			end
 		end
+	end
+
+	--[[ Callback: Stagger:PostUpdateColor(r, g, b)
+	Called after the element color has been updated.
+
+	* self - the Stagger element
+	* r    - the red component of the used color (number)[0-1]
+	* g    - the green component of the used color (number)[0-1]
+	* b    - the blue component of the used color (number)[0-1]
+	--]]
+	if(element.PostUpdateColor) then
+		element:PostUpdateColor(r, g, b)
 	end
 end
 
@@ -67,14 +112,8 @@ local function Update(self, event, unit)
 	element:SetMinMaxValues(0, max)
 	element:SetValue(cur)
 
-	--[[ Override: Stagger:UpdateColor(cur, max)
-	Used to completely override the internal function for updating the widget's colors.
-
-	* self - the Stagger element
-	* cur  - the amount of staggered damage (number)
-	* max  - the player's maximum possible health value (number)
-	--]]
-	element:UpdateColor(cur, max)
+	element.cur = cur
+	element.max = max
 
 	--[[ Callback: Stagger:PostUpdate(cur, max)
 	Called after the element has been updated.
@@ -96,7 +135,16 @@ local function Path(self, ...)
 	* event - the event triggering the update (string)
 	* unit  - the unit accompanying the event (string)
 	--]]
-	return (self.Stagger.Override or Update)(self, ...)
+	(self.Stagger.Override or Update)(self, ...);
+
+	--[[ Override: Stagger.UpdateColor(self, event, unit)
+	Used to completely override the internal function for updating the widgets' colors.
+
+	* self  - the parent object
+	* event - the event triggering the update (string)
+	* unit  - the unit accompanying the event (string)
+	--]]
+	(self.Stagger.UpdateColor or UpdateColor) (self, ...)
 end
 
 local function Visibility(self, event, unit)
@@ -105,17 +153,13 @@ local function Visibility(self, event, unit)
 			self.Stagger:Hide()
 			self:UnregisterEvent('UNIT_AURA', Path)
 		end
-		if SPEC_MONK_WINDWALKER ~= GetSpecialization() then
-			if self.Debuffs then self.Debuffs:SetPoint("BOTTOMRIGHT", self, "TOPRIGHT", 2, 5) end	-- RefineUI
-		end
 	else
 		if(not self.Stagger:IsShown()) then
 			self.Stagger:Show()
 			self:RegisterEvent('UNIT_AURA', Path)
 		end
-		if self.Debuffs then self.Debuffs:SetPoint("BOTTOMRIGHT", self, "TOPRIGHT", 2, 22) end	-- RefineUI
 
-		return Path(self, event, unit)
+		Path(self, event, unit)
 	end
 end
 
@@ -127,33 +171,24 @@ local function VisibilityPath(self, ...)
 	* event - the event triggering the update (string)
 	* unit  - the unit accompanying the event (string)
 	--]]
-	return (self.Stagger.OverrideVisibility or Visibility)(self, ...)
+	(self.Stagger.OverrideVisibility or Visibility)(self, ...)
 end
 
 local function ForceUpdate(element)
-	return VisibilityPath(element.__owner, 'ForceUpdate', element.__owner.unit)
+	VisibilityPath(element.__owner, 'ForceUpdate', element.__owner.unit)
 end
 
-local function Enable(self)
+local function Enable(self, unit)
 	local element = self.Stagger
-	if(element) then
+	if(element and UnitIsUnit(unit, 'player')) then
 		element.__owner = self
 		element.ForceUpdate = ForceUpdate
 
 		self:RegisterEvent('UNIT_DISPLAYPOWER', VisibilityPath)
 		self:RegisterEvent('PLAYER_TALENT_UPDATE', VisibilityPath, true)
 
-		element.handler = CreateFrame("Frame", nil, element)	-- RefineUI
-		element.handler:RegisterEvent("PLAYER_TALENT_UPDATE")
-		element.handler:RegisterEvent("PLAYER_ENTERING_WORLD")
-		element.handler:SetScript("OnEvent", function() Visibility(self) end)
-
 		if(element:IsObjectType('StatusBar') and not element:GetStatusBarTexture()) then
 			element:SetStatusBarTexture([[Interface\TargetingFrame\UI-StatusBar]])
-		end
-
-		if(not element.UpdateColor) then
-			element.UpdateColor = UpdateColor
 		end
 
 		MonkStaggerBar:UnregisterEvent('PLAYER_ENTERING_WORLD')

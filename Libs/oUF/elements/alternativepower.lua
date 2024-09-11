@@ -1,11 +1,64 @@
+--[[
+# Element: Alternative Power Bar
+
+Handles the visibility and updating of a status bar that displays encounter- or quest-related power information, such as
+the number of hour glass charges during the Murozond encounter in the dungeon End Time.
+
+## Widget
+
+AlternativePower - A `StatusBar` used to represent the unit's alternative power.
+
+## Notes
+
+If mouse interactivity is enabled for the widget, `OnEnter` and/or `OnLeave` handlers will be set to display a tooltip.
+A default texture will be applied if the widget is a StatusBar and doesn't have a texture set.
+
+## Options
+
+.smoothGradient                   - 9 color values to be used with the .colorSmooth option (table)
+.considerSelectionInCombatHostile - Indicates whether selection should be considered hostile while the unit is in
+                                    combat with the player (boolean)
+
+The following options are listed by priority. The first check that returns true decides the color of the bar.
+
+.colorThreat       - Use `self.colors.threat[threat]` to color the bar based on the unit's threat status. `threat` is
+                     defined by the first return of [UnitThreatSituation](https://warcraft.wiki.gg/wiki/API_UnitThreatSituation) (boolean)
+.colorPower        - Use `self.colors.power[token]` to color the bar based on the unit's alternative power type
+                     (boolean)
+.colorClass        - Use `self.colors.class[class]` to color the bar based on unit class. `class` is defined by the
+                     second return of [UnitClass](https://warcraft.wiki.gg/wiki/API_UnitClass) (boolean)
+.colorClassNPC     - Use `self.colors.class[class]` to color the bar if the unit is a NPC (boolean)
+.colorSelection    - Use `self.colors.selection[selection]` to color the bar based on the unit's selection color.
+                     `selection` is defined by the return value of Private.unitSelectionType, a wrapper function
+                     for [UnitSelectionType](https://warcraft.wiki.gg/wiki/API_UnitSelectionType) (boolean)
+.colorReaction     - Use `self.colors.reaction[reaction]` to color the bar based on the player's reaction towards the
+                     unit. `reaction` is defined by the return value of
+                     [UnitReaction](https://warcraft.wiki.gg/wiki/API_UnitReaction) (boolean)
+.colorSmooth       - Use `self.colors.smooth` to color the bar with a smooth gradient based on the unit's current
+                     alternative power percentage (boolean)
+
+## Examples
+
+    -- Position and size
+    local AlternativePower = CreateFrame('StatusBar', nil, self)
+    AlternativePower:SetHeight(20)
+    AlternativePower:SetPoint('BOTTOM')
+    AlternativePower:SetPoint('LEFT')
+    AlternativePower:SetPoint('RIGHT')
+
+    -- Register with oUF
+    self.AlternativePower = AlternativePower
+--]]
+
 local _, ns = ...
 local oUF = ns.oUF
 local Private = oUF.Private
 
 local unitSelectionType = Private.unitSelectionType
 
--- sourced from FrameXML/UnitPowerBarAlt.lua
+-- sourced from Blizzard_UnitFrame/UnitPowerBarAlt.lua
 local ALTERNATE_POWER_INDEX = Enum.PowerType.Alternate or 10
+
 local ALTERNATE_POWER_NAME = 'ALTERNATE'
 
 local function updateTooltip(self)
@@ -35,8 +88,8 @@ local function UpdateColor(self, event, unit, powerType)
 		color =  self.colors.threat[UnitThreatSituation('player', unit)]
 	elseif(element.colorPower) then
 		color = self.colors.power[ALTERNATE_POWER_INDEX]
-	elseif(element.colorClass and UnitIsPlayer(unit))
-		or (element.colorClassNPC and not UnitIsPlayer(unit)) then
+	elseif(element.colorClass and (UnitIsPlayer(unit) or UnitInPartyIsAI(unit)))
+		or (element.colorClassNPC and not (UnitIsPlayer(unit) or UnitInPartyIsAI(unit))) then
 		local _, class = UnitClass(unit)
 		color = self.colors.class[class]
 	elseif(element.colorSelection and unitSelectionType(unit, element.considerSelectionInCombatHostile)) then

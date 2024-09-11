@@ -107,13 +107,13 @@ hooksecurefunc(BuffFrame.AuraContainer, "UpdateGridLayout", function(self, auras
         -- Position auras in grid layout
         aura:ClearAllPoints()
         if (index > 1) and (mod(index, rowbuffs) == 1) then
-            aura:SetPoint("TOP", aboveBuff, "BOTTOM", 0, -3)
+            aura:SetPoint("TOP", aboveBuff, "BOTTOM", 0, -6)
             aboveBuff = aura
         elseif index == 1 then
             aura:SetPoint("TOPRIGHT", BuffsAnchor, "TOPRIGHT", 0, 0)
             aboveBuff = aura
         else
-            aura:SetPoint("RIGHT", previousBuff, "LEFT", -3, 0)
+            aura:SetPoint("RIGHT", previousBuff, "LEFT", -6, 0)
         end
 
         previousBuff = aura

@@ -215,8 +215,8 @@ function UF.CreatePortraitAndCastIcon(self)
     local PortraitGlow = PortraitFrame:CreateTexture(nil, 'BACKGROUND') -- Use BACKGROUND layer
     PortraitGlow:SetAllPoints(BorderTexture)                            -- Center it over the health bar
     PortraitGlow:SetTexture("Interface\\AddOns\\RefineUI\\Media\\Textures\\PortraitGlow.blp")
-    PortraitGlow:SetVertexColor(1, 1, 1, .6)            -- Set a color with some transparency
-    PortraitGlow:SetDrawLayer("OVERLAY", 1)   
+    PortraitGlow:SetVertexColor(1, 1, 1, .6)                            -- Set a color with some transparency
+    PortraitGlow:SetDrawLayer("OVERLAY", 1)
     PortraitGlow:Hide()
 
     local radialStatusBar = R.CreateRadialStatusBar(PortraitFrame)
@@ -248,7 +248,6 @@ function UF.CreatePortraitAndCastIcon(self)
         end
     end)
 end
-
 
 ----------------------------------------------------------------------------------------
 -- Castbar
@@ -412,47 +411,38 @@ end
 ----------------------------------------------------------------------------------------
 function UF.CreatePartyAuraWatch(self)
     UF.CreatePlayerBuffWatch(self)
-    UF.CreatePartyBuffWatch(self)
+    -- UF.CreatePartyBuffWatch(self)
 end
 
 function UF.CreateRaidDebuffs(self)
+    -- Raid debuffs
     self.RaidDebuffs = CreateFrame("Frame", nil, self)
     self.RaidDebuffs:SetSize(19, 19)
-    self.RaidDebuffs:SetPoint("CENTER", self, 0, 20)
+    self.RaidDebuffs:SetPoint("BOTTOM", self, "TOP", 0, 24)
     self.RaidDebuffs:SetFrameStrata("MEDIUM")
     self.RaidDebuffs:SetFrameLevel(10)
-    self.RaidDebuffs:SetTemplate("Default")
+    self.RaidDebuffs:SetTemplate("Icon")
 
     self.RaidDebuffs.icon = self.RaidDebuffs:CreateTexture(nil, "BORDER")
     self.RaidDebuffs.icon:SetTexCoord(0.1, 0.9, 0.1, 0.9)
     self.RaidDebuffs.icon:SetPoint("TOPLEFT", 2, -2)
     self.RaidDebuffs.icon:SetPoint("BOTTOMRIGHT", -2, 2)
 
-    -- if C.raidframe.plugins_aura_watch_timer == true then
-    --     self.RaidDebuffs.time = UF.SetFontString(self.RaidDebuffs, C.font.unit_frames_font, C.font.unit_frames_font_size,
-    --         C.font.unit_frames_font_style)
-    --     self.RaidDebuffs.time:SetPoint("CENTER", 1, 1)
-    --     self.RaidDebuffs.time:SetTextColor(1, 1, 1)
-    -- end
 
-    self.RaidDebuffs.count = R.SetFontString(self.RaidDebuffs, C.media.normalFont, 8, "OUTLINE")
+    self.RaidDebuffs.count = R.SetFontString(self.RaidDebuffs, unpack(C.font.auras.smallCount))
     self.RaidDebuffs.count:SetPoint("BOTTOMRIGHT", self.RaidDebuffs, "BOTTOMRIGHT", 3, -1)
     self.RaidDebuffs.count:SetTextColor(1, 1, 1)
 
-    if C.aura.show_spiral == true then
-        self.RaidDebuffs.cd = CreateFrame("Cooldown", nil, self.RaidDebuffs, "CooldownFrameTemplate")
-        self.RaidDebuffs.cd:SetPoint("TOPLEFT", 2, -2)
-        self.RaidDebuffs.cd:SetPoint("BOTTOMRIGHT", -2, 2)
-        self.RaidDebuffs.cd:SetReverse(true)
-        self.RaidDebuffs.cd:SetDrawEdge(false)
-        self.RaidDebuffs.cd.noCooldownCount = true
-        self.RaidDebuffs.parent = CreateFrame("Frame", nil, self.RaidDebuffs)
-        self.RaidDebuffs.parent:SetFrameLevel(self.RaidDebuffs.cd:GetFrameLevel() + 1)
-        if C.raidframe.plugins_aura_watch_timer == true then
-            self.RaidDebuffs.time:SetParent(self.RaidDebuffs.parent)
-        end
-        self.RaidDebuffs.count:SetParent(self.RaidDebuffs.parent)
-    end
+
+    self.RaidDebuffs.cd = CreateFrame("Cooldown", nil, self.RaidDebuffs, "CooldownFrameTemplate")
+    self.RaidDebuffs.cd:SetPoint("TOPLEFT", 2, -2)
+    self.RaidDebuffs.cd:SetPoint("BOTTOMRIGHT", -2, 2)
+    self.RaidDebuffs.cd:SetReverse(true)
+    self.RaidDebuffs.cd:SetDrawEdge(false)
+    self.RaidDebuffs.cd.noCooldownCount = true
+    self.RaidDebuffs.parent = CreateFrame("Frame", nil, self.RaidDebuffs)
+    self.RaidDebuffs.parent:SetFrameLevel(self.RaidDebuffs.cd:GetFrameLevel() + 1)
+    self.RaidDebuffs.count:SetParent(self.RaidDebuffs.parent)
 
     self.RaidDebuffs.ShowDispellableDebuff = true
     self.RaidDebuffs.FilterDispellableDebuff = true

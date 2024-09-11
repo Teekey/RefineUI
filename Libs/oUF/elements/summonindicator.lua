@@ -1,7 +1,31 @@
+--[[
+# Element: SummonIndicator
+
+Handles the visibility and updating of an indicator based on the unit's incoming summon status.
+
+## Widget
+
+SummonIndicator - A `Texture` used to display if the unit has an incoming summon.
+
+## Notes
+
+This element updates by changing the texture.
+
+## Examples
+
+    -- Position and size
+    local SummonIndicator = self:CreateTexture(nil, 'OVERLAY')
+    SummonIndicator:SetSize(32, 32)
+    SummonIndicator:SetPoint('TOPRIGHT', self)
+
+    -- Register it with oUF
+    self.SummonIndicator = SummonIndicator
+--]]
+
 local _, ns = ...
 local oUF = ns.oUF
 
--- sourced from Blizzard_APIDocumentation/IncomingSummonDocumentation.lua
+-- sourced from Blizzard_APIDocumentationGenerated/IncomingSummonDocumentation.lua
 local SUMMON_STATUS_NONE = Enum.SummonStatus.None or 0
 local SUMMON_STATUS_PENDING = Enum.SummonStatus.Pending or 1
 local SUMMON_STATUS_ACCEPTED = Enum.SummonStatus.Accepted or 2
