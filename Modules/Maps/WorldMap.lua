@@ -12,7 +12,7 @@ MapQuestInfoRewardsFrame.XPFrame.Name:SetFont(C.media.normalFont, 13, "")
 local maxQuest = 35
 local numQuest = CreateFrame("Frame", nil, QuestMapFrame)
 numQuest.text = numQuest:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-numQuest.text:SetPoint("TOP", QuestMapFrame, "TOP", 0, C.skins.blizzardFrames and -21 or -17)
+numQuest.text:SetPoint("TOP", QuestMapFrame, "TOP", 0, -21)
 numQuest.text:SetJustifyH("LEFT")
 
 -- Creating coordinate
@@ -90,62 +90,3 @@ coords:SetScript("OnEvent", function(self, event)
         coords:SetAlpha(0)
     end
 end)
-
--- ----------------------------------------------------------------------------------------
--- --	Added options to map tracking button
--- ----------------------------------------------------------------------------------------
--- hooksecurefunc(WorldMapFrame.overlayFrames[2], "InitializeDropDown", function(self)
--- 	UIDropDownMenu_AddSeparator()
--- 	local info = UIDropDownMenu_CreateInfo()
-
--- 	info.isTitle = true
--- 	info.notCheckable = true
--- 	info.text = "RefineUI"
-
--- 	UIDropDownMenu_AddButton(info)
--- 	info.text = nil
-
--- 	info.isTitle = nil
--- 	info.disabled = nil
--- 	info.notCheckable = nil
--- 	info.isNotRadio = true
--- 	info.keepShownOnClick = true
-
--- 	info.text = L_MAP_COORDS
--- 	info.checked = function()
--- 		return RefineUISettings.Coords == true
--- 	end
-
--- 	info.func = function()
--- 		if RefineUISettings.Coords == true then
--- 			RefineUISettings.Coords = false
--- 			coords:SetAlpha(0)
--- 		else
--- 			RefineUISettings.Coords = true
--- 			coords:SetAlpha(1)
--- 		end
--- 	end
--- 	UIDropDownMenu_AddButton(info)
-
--- 	if C.minimap.fog_of_war == true then
--- 		info.text = L_MAP_FOG
--- 		info.checked = function()
--- 			return RefineUISettings.FogOfWar == true
--- 		end
-
--- 		info.func = function()
--- 			if RefineUISettings.FogOfWar == true then
--- 				RefineUISettings.FogOfWar = false
--- 				for i = 1, #R.overlayTextures do
--- 					R.overlayTextures[i]:Hide()
--- 				end
--- 			else
--- 				RefineUISettings.FogOfWar = true
--- 				for i = 1, #R.overlayTextures do
--- 					R.overlayTextures[i]:Show()
--- 				end
--- 			end
--- 		end
--- 		UIDropDownMenu_AddButton(info)
--- 	end
--- end)

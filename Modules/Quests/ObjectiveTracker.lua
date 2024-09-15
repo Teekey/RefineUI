@@ -299,36 +299,3 @@ for i = 1, #headers do
 	end
 end
 
--- ----------------------------------------------------------------------------------------
--- --	Skin Torghast ablities
--- ----------------------------------------------------------------------------------------
--- local Maw = ScenarioObjectiveTracker.MawBuffsBlock.Container
--- Maw:SkinButton()
--- Maw:SetPoint("TOPRIGHT", ScenarioObjectiveTracker.MawBuffsBlock, "TOPRIGHT", -23, 0)
--- Maw.List.button:SetSize(234, 30)
--- Maw.List:StripTextures()
--- Maw.List:SetTemplate("Overlay")
-
--- Maw.List:HookScript("OnShow", function(self)
--- 	self.button:SetPushedTexture(0)
--- 	self.button:SetHighlightTexture(0)
--- 	self.button:SetWidth(234)
--- 	self.button:SetButtonState("NORMAL")
--- 	self.button:SetPushedTextOffset(0, 0)
--- 	self.button:SetButtonState("PUSHED", true)
--- end)
-
--- Maw.List:HookScript("OnHide", function(self)
--- 	self.button:SetPushedTexture(0)
--- 	self.button:SetHighlightTexture(0)
--- 	self.button:SetWidth(234)
--- end)
-
--- Maw:HookScript("OnClick", function(container)
--- 	container.List:ClearAllPoints()
--- 	if IsFramePositionedLeft(ObjectiveTrackerFrame) then
--- 		container.List:SetPoint("TOPLEFT", container, "TOPRIGHT", 30, 1)
--- 	else
--- 		container.List:SetPoint("TOPRIGHT", container, "TOPLEFT", -15, 1)
--- 	end
--- end)

@@ -144,6 +144,9 @@ end
 local function CreateNameTag(length, ellipsis)
     return function(unit)
         local name = UnitName(unit)
+        if not name then
+            return ""  -- Return an empty string if name is nil
+        end
         name = string.upper(name)
         return R.UTF(name, length, ellipsis)
     end
@@ -170,20 +173,36 @@ oUF.Tags.Methods["NameLongAbbrev"] = function(unit)
 end
 oUF.Tags.Events["NameLongAbbrev"] = "UNIT_NAME_UPDATE"
 
+local hiddenTooltip
+local function GetHiddenTooltip()
+    if not hiddenTooltip then
+        hiddenTooltip = CreateFrame("GameTooltip", "HiddenTitleTooltip", nil, "GameTooltipTemplate")
+        hiddenTooltip:SetOwner(WorldFrame, "ANCHOR_NONE")
+    end
+    return hiddenTooltip
+end
+
 local function GetNPCTitle(unit)
     if UnitIsPlayer(unit) or not UnitExists(unit) then return "" end
     
-    GameTooltip:SetOwner(WorldFrame, "ANCHOR_NONE")
-    GameTooltip:SetUnit(unit)
-    
-    local secondLine = GameTooltipTextLeft2:GetText()
     local title = ""
     
-    if secondLine and not secondLine:match("%d") then
-        title = "<" .. secondLine .. ">"
+    -- Use the reusable hidden tooltip
+    local tooltip = GetHiddenTooltip()
+    tooltip:SetUnit(unit)
+    
+    -- Check the second line of the tooltip
+    local secondLine = _G["HiddenTitleTooltipTextLeft2"]
+    if secondLine then
+        local text = secondLine:GetText()
+        if text and not text:match("%d") and not UnitIsPlayer(unit) then
+            title = "<" .. text .. ">"
+        end
     end
     
-    GameTooltip:Hide()
+    -- Clear the tooltip
+    tooltip:ClearLines()
+    
     return title
 end
 

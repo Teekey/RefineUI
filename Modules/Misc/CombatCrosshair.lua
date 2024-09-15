@@ -11,7 +11,7 @@ if C.combatcrosshair.enable ~= true then return end
 ----------------------------------------------------------------------------------------
 
 local combatCrosshair = CreateFrame("Frame", nil, UIParent)
-combatCrosshair:SetFrameStrata("BACKGROUND")
+combatCrosshair:SetFrameStrata("DIALOG")
 combatCrosshair:SetWidth(C.combatcrosshair.size)
 combatCrosshair:SetHeight(C.combatcrosshair.size)
 combatCrosshair:SetPoint("CENTER", C.combatcrosshair.offsetx, C.combatcrosshair.offsety)

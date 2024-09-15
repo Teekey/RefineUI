@@ -12,7 +12,8 @@ local CreateFrame, hooksecurefunc = CreateFrame, hooksecurefunc
 local UnitIsFriend, UnitIsPlayer, UnitClass = UnitIsFriend, UnitIsPlayer, UnitClass
 local GetTime, select, unpack = GetTime, select, unpack
 local CreateFrame, hooksecurefunc, UIParent = CreateFrame, hooksecurefunc, UIParent
-local UnitIsFriend, UnitIsPlayer, UnitClass, UnitCanAttack, UnitIsUnit = UnitIsFriend, UnitIsPlayer, UnitClass, UnitCanAttack, UnitIsUnit
+local UnitIsFriend, UnitIsPlayer, UnitClass, UnitCanAttack, UnitIsUnit = UnitIsFriend, UnitIsPlayer, UnitClass,
+    UnitCanAttack, UnitIsUnit
 local GetTime, select, unpack = GetTime, select, unpack
 local C_NamePlate = C_NamePlate
 local GetNamePlateForUnit, GetNamePlates = C_NamePlate.GetNamePlateForUnit, C_NamePlate.GetNamePlates
@@ -161,16 +162,16 @@ function NP.CreateHealthBar(self)
     self:Tag(self.Health.value, "[NameplateHealth]")
 
     -- Register events for threat updates
-    self.Health:RegisterEvent("PLAYER_REGEN_DISABLED")
-    self.Health:RegisterEvent("PLAYER_REGEN_ENABLED")
-    self.Health:RegisterEvent("UNIT_THREAT_SITUATION_UPDATE")
-    self.Health:RegisterEvent("UNIT_THREAT_LIST_UPDATE")
-    self.Health:RegisterEvent("UNIT_HEALTH")
-    self.Health:SetScript("OnEvent", function()
-        if C.nameplate.enhance_threat then
-            NP.UpdateThreat(self)
-        end
-    end)
+    -- self.Health:RegisterEvent("PLAYER_REGEN_DISABLED")
+    -- self.Health:RegisterEvent("PLAYER_REGEN_ENABLED")
+    -- self.Health:RegisterEvent("UNIT_THREAT_SITUATION_UPDATE")
+    -- self.Health:RegisterEvent("UNIT_THREAT_LIST_UPDATE")
+    -- self.Health:RegisterEvent("UNIT_HEALTH")
+    -- self.Health:SetScript("OnEvent", function()
+    --     if C.nameplate.enhanceThreat then
+    --         NP.UpdateThreat(self)
+    --     end
+    -- end)
 
     self.Health.PostUpdate = NP.HealthPostUpdate
 
@@ -223,10 +224,91 @@ function NP.CreateNameText(self)
     self.Title:SetShadowOffset(1, -1)
     self.Title:SetPoint("TOP", self.Name, "BOTTOM", 0, 0)
     self.Title:SetWordWrap(false)
-    self.Title:SetJustifyH("CENTER")       -- Center the text horizontally
-    self.Title:SetTextColor(0.8, 0.8, 0.8) -- Set text color to slightly off white
+    self.Title:SetJustifyH("CENTER")                 -- Center the text horizontally
+    self.Title:SetTextColor(0.8, 0.8, 0.8)           -- Set text color to slightly off white
     self:Tag(self.Title, "[NPCTitle]")
     self.Title:SetWidth(self.Title:GetStringWidth()) -- Set width to the text width
+end
+
+function NP.CreatePortraitAndQuestIcon(self)
+
+        -- Create a frame to attach the portrait to
+        local PortraitFrame = CreateFrame("Frame", nil, self)
+        PortraitFrame:SetSize(20, 20)
+        PortraitFrame:SetPoint("RIGHT", self.Health, "LEFT", 5, 0)
+        PortraitFrame:SetFrameLevel(self.Health:GetFrameLevel() + 2) -- Ensure this is higher than the background
+
+        -- Create a circular border texture for the portrait
+        local BorderTexture = PortraitFrame:CreateTexture(nil, 'OVERLAY')
+        BorderTexture:SetAllPoints(PortraitFrame)
+        BorderTexture:SetTexture("Interface\\AddOns\\RefineUI\\Media\\Textures\\PortraitBorder.blp")
+        BorderTexture:SetVertexColor(.6, .6, .6, 1)
+        BorderTexture:SetDrawLayer("OVERLAY", 3)
+
+        -- local r, g, b = unpack(R.oUF_colors.interruptible)
+        -- BorderTexture:SetVertexColor(r, g, b)
+
+        -- -- 2D Portrait
+        -- local Portrait = PortraitFrame:CreateTexture(nil, 'OVERLAY')
+        -- Portrait:SetSize(16, 16)
+        -- Portrait:SetPoint('CENTER', PortraitFrame, 'CENTER')
+        -- Portrait:SetDrawLayer("OVERLAY", 2)
+
+
+        local portrait = PortraitFrame:CreateTexture(nil, 'ARTWORK')
+        portrait:SetSize(16, 16)                             -- Change this to match the inner size of the frame
+        portrait:SetPoint('CENTER', PortraitFrame, 'CENTER') -- Center it in the frame
+        portrait:SetDrawLayer("OVERLAY", 2)
+
+        -- Create and apply a circular mask
+        local mask = PortraitFrame:CreateMaskTexture()
+        mask:SetTexture("Interface\\AddOns\\RefineUI\\Media\\Textures\\PortraitMask.blp")
+        mask:SetAllPoints(BorderTexture)
+        portrait:AddMaskTexture(mask)
+
+        -- Background texture for the portrait
+        local BackgroundTexture = PortraitFrame:CreateTexture(nil, 'BACKGROUND') -- Use BACKGROUND layer
+        BackgroundTexture:SetAllPoints(BorderTexture)                            -- Center it over the health bar
+        BackgroundTexture:SetTexture("Interface\\AddOns\\RefineUI\\Media\\Textures\\PortraitBG.blp")
+        BackgroundTexture:SetVertexColor(unpack(C.media.borderColor))            -- Set a color with some transparency
+        BackgroundTexture:SetDrawLayer("OVERLAY", 1)                             -- Ensure it is behind the border and portrait
+
+        -- Background texture for the portrait
+        local PortraitGlow = PortraitFrame:CreateTexture(nil, 'BACKGROUND') -- Use BACKGROUND layer
+        PortraitGlow:SetAllPoints(BorderTexture)                            -- Center it over the health bar
+        PortraitGlow:SetTexture("Interface\\AddOns\\RefineUI\\Media\\Textures\\PortraitGlow.blp")
+        PortraitGlow:SetVertexColor(1, 1, 1, .6)                            -- Set a color with some transparency
+        PortraitGlow:SetDrawLayer("OVERLAY", 1)
+        PortraitGlow:Hide()
+
+        local radialStatusBar = R.CreateRadialStatusBar(PortraitFrame)
+        radialStatusBar:SetAllPoints(PortraitFrame)
+        radialStatusBar:SetTexture("Interface\\AddOns\\RefineUI\\Media\\Textures\\PortraitBorder.blp")
+        radialStatusBar:SetVertexColor(0, 0.8, 0.8, 0.75) -- Teal blue color
+        radialStatusBar:SetFrameStrata("HIGH")
+
+        -- -- Create the text element for quest completion
+        -- local QuestText = PortraitFrame:CreateFontString(nil, "OVERLAY")
+        -- QuestText:SetPoint("CENTER", portrait, "CENTER", 0, -4)
+        -- QuestText:SetJustifyH("CENTER")
+        -- QuestText:SetFont(C.font.nameplates_font, 5, C.font.nameplates_font_style)
+        -- QuestText:SetShadowOffset(C.font.nameplates_font_shadow and 1 or 0, C.font.nameplates_font_shadow and -1 or 0)
+
+        self.CombinedPortrait = portrait
+        self.CombinedPortrait.Text = QuestText
+        self.CombinedPortrait.radialStatusbar = radialStatusBar
+        self.PortraitBorder = BorderTexture
+        self.PortraitFrame = PortraitFrame
+        self.PortraitGlow = PortraitGlow
+
+        portrait:Show()
+        radialStatusBar:Show()
+
+        self:HookScript("OnShow", function(self)
+            if self.CombinedPortrait then
+                self.CombinedPortrait:ForceUpdate()
+            end
+        end)
 end
 
 ----------------------------------------------------------------------------------------
@@ -249,104 +331,89 @@ end
 -- Cast Bar
 ----------------------------------------------------------------------------------------
 function NP.CreateCastBar(self)
-    self.Castbar = CreateFrame("StatusBar", nil, self)
-    self.Castbar:SetFrameLevel(3)
-    self.Castbar:SetStatusBarTexture(C.media.texture)
-    self.Castbar:SetStatusBarColor(1, 0.8, 0)
-    self.Castbar:SetPoint("TOP", self.Health, "BOTTOM", 0, -2)
-    self.Castbar:SetSize(C.nameplate.width, C.nameplate.height)
-    CreateBorderFrame(self.Castbar)
-
-    self.Castbar.bg = self.Castbar:CreateTexture(nil, "BORDER")
-    self.Castbar.bg:SetAllPoints()
-    self.Castbar.bg:SetTexture(C.media.texture)
-    self.Castbar.bg:SetColorTexture(1, 0.8, 0)
-    self.Castbar.bg.multiplier = 0.5
-
-    self.Castbar.PostCastStart = NP.PostCastStart
-    self.Castbar.PostCastInterruptible = NP.PostCastStart
-
-    -- Cast Name Text
-    self.Castbar.Text = self.Castbar:CreateFontString(nil, "OVERLAY")
-    self.Castbar.Text:SetPoint("CENTER", self.Castbar, "CENTER", 0, 0)
-    self.Castbar.Text:SetFont(unpack(C.font.nameplates.spell))
-    self.Castbar.Text:SetShadowOffset(1, -1)
-    self.Castbar.Text:SetHeight(C.font.nameplates_spell_size)
-    self.Castbar.Text:SetJustifyH("LEFT")
-
-    -- Cast Bar Icon
-    self.Castbar.Button = CreateFrame("Frame", nil, self.Castbar)
-    self.Castbar.Icon = self.Castbar.Button:CreateTexture(nil, "ARTWORK")
-    self.Castbar.Icon:SetTexCoord(0.1, 0.9, 0.1, 0.9)
-    self.Castbar.Icon:SetDrawLayer("ARTWORK")
-    self.Castbar.Icon:SetSize((C.nameplate.height) * 2, (C.nameplate.height) * 2)
-    self.Castbar.Icon:SetPoint("TOPRIGHT", self.Health, "TOPLEFT", -4, 0)
-    self.Castbar.Icon:SetPoint("BOTTOMRIGHT", self.Castbar, "BOTTOMLEFT", -4, 0)
-    self.Castbar.Icon:SetWidth(self.Castbar.Icon:GetHeight())
-    CreateBorderFrameIcon(self.Castbar.Button, self.Castbar.Icon)
-    -- Cooldown frame
-    self.Castbar.IconCooldown = CreateFrame("Cooldown", nil, self.Castbar.Button, "CooldownFrameTemplate")  -- Ensure it's parented to Button
-    self.Castbar.IconCooldown:SetSwipeTexture("Interface\\AddOns\\RefineUI\\Media\\Textures\\CD.blp")
-    self.Castbar.IconCooldown:SetPoint("TOPLEFT", self.Castbar.Icon, "TOPLEFT", -2, 2)
-    self.Castbar.IconCooldown:SetPoint("BOTTOMRIGHT", self.Castbar.Icon, "BOTTOMRIGHT", 2, -2)
-    self.Castbar.IconCooldown:SetDrawBling(false)
-    self.Castbar.IconCooldown:SetDrawEdge(false)
-    self.Castbar.IconCooldown:SetSwipeColor(0, 0, 0, 0.6)
-    self.Castbar.IconCooldown:SetReverse(true)
-    self.Castbar.IconCooldown:SetFrameLevel(self.Castbar.Button:GetFrameLevel() + 1)  -- Set to the same level as the button
+        self.Castbar = CreateFrame("StatusBar", nil, self)
+        self.Castbar:SetFrameLevel(3)
+        self.Castbar:SetStatusBarTexture("Interface\\AddOns\\RefineUI\\Media\\Textures\\Castbar3.blp")
+        self.Castbar:SetStatusBarColor(1, 0.8, 0)
+        self.Castbar:SetPoint("TOP", self.Health, "BOTTOM", 0, 2)
+        self.Castbar:SetSize(C.nameplate.width, C.nameplate.height + 2)
+        CreateBorderFrame(self.Castbar)
+        -- self.Castbar.border:SetFrameLevel(self.Health.border:GetFrameLevel() - 1)
+        self.Castbar:SetFrameLevel(self.Health:GetFrameLevel() - 1)
 
 
-    -- Cast Time Text
-    self.Castbar.Time = self.Castbar.IconCooldown:CreateFontString(nil, "OVERLAY")
-    self.Castbar.Time:SetPoint("CENTER", self.Castbar.IconCooldown, "CENTER", 0, 0)
-    self.Castbar.Time:SetJustifyH("CENTER")
-    self.Castbar.Time:SetFont(unpack(C.font.nameplates.spelltime))
-    self.Castbar.Time:SetShadowOffset(1, -1)
+        self.Castbar.bg = self.Castbar:CreateTexture(nil, "BORDER")
+        self.Castbar.bg:SetAllPoints()
+        self.Castbar.bg:SetTexture(C.media.texture)
+        self.Castbar.bg:SetColorTexture(1, 0.8, 0)
+        self.Castbar.bg.multiplier = 0.5
 
-    self.Castbar.CustomTimeText = function(self, duration)
-        self.Time:SetText(duration > 600 and "∞" or ("%.1f"):format(self.channeling and duration or self.max - duration))
-    end
+        self.Castbar.PostCastStart = NP.PostCastStart
+        self.Castbar.PostCastStop = NP.PostCastStop
+        self.Castbar.PostCastInterruptible = NP.PostCastStart
+
+        -- Cast Name Text
+        self.Castbar.Text = self.Castbar:CreateFontString(nil, "OVERLAY")
+        self.Castbar.Text:SetPoint("BOTTOMLEFT", self.Castbar, "BOTTOMLEFT", 2, 1)
+        self.Castbar.Text:SetFont(unpack(C.font.nameplates.spell))
+        self.Castbar.Text:SetShadowOffset(1, -1)
+        self.Castbar.Text:SetJustifyH("LEFT")
+
+        -- -- -- Cast Bar Icon
+        -- -- self.Castbar.Button = CreateFrame("Frame", nil, self.Castbar)
+        -- self.Castbar.Icon = self.Castbar:CreateTexture(nil, "ARTWORK")
+        -- self.Castbar.Icon:SetTexCoord(0.1, 0.9, 0.1, 0.9)
+        -- self.Castbar.Icon:SetDrawLayer("ARTWORK")
+        -- self.Castbar.Icon:SetSize((C.nameplate.height) * 2, (C.nameplate.height) * 2)
+        -- self.Castbar.Icon:SetPoint("TOPRIGHT", self.Health, "TOPLEFT", -4, 0)
+        -- self.Castbar.Icon:SetPoint("BOTTOMRIGHT", self.Castbar, "BOTTOMLEFT", -4, 0)
+        -- self.Castbar.Icon:SetWidth(self.Castbar.Icon:GetHeight())
+
+        -- self.Castbar.Icon:Hide()
+        -- -- Cooldown frame
+        -- self.Castbar.IconCooldown = CreateFrame("Cooldown", nil, self.Castbar.Button, "CooldownFrameTemplate") -- Ensure it's parented to Button
+        -- self.Castbar.IconCooldown:SetSwipeTexture("Interface\\AddOns\\RefineUI\\Media\\Textures\\CD.blp")
+        -- self.Castbar.IconCooldown:SetPoint("TOPLEFT", self.Castbar.Icon, "TOPLEFT", -2, 2)
+        -- self.Castbar.IconCooldown:SetPoint("BOTTOMRIGHT", self.Castbar.Icon, "BOTTOMRIGHT", 2, -2)
+        -- self.Castbar.IconCooldown:SetDrawBling(false)
+        -- self.Castbar.IconCooldown:SetDrawEdge(false)
+        -- self.Castbar.IconCooldown:SetSwipeColor(0, 0, 0, 0.6)
+        -- self.Castbar.IconCooldown:SetReverse(true)
+        -- self.Castbar.IconCooldown:SetFrameLevel(self.Castbar.Button:GetFrameLevel() + 1) -- Set to the same level as the button
+
+
+        -- Cast Time Text
+        self.Castbar.Time = self.Castbar:CreateFontString(nil, "OVERLAY")
+        self.Castbar.Time:SetPoint("BOTTOMRIGHT", self.Castbar, "BOTTOMRIGHT", 0, 1)
+        self.Castbar.Time:SetJustifyH("RIGHT")
+        self.Castbar.Time:SetFont(unpack(C.font.nameplates.spelltime))
+        self.Castbar.Time:SetShadowOffset(1, -1)
+
+        self.Castbar.CustomTimeText = function(self, duration)
+            self.Time:SetText(duration > 600 and "∞" or
+                ("%.1f"):format(self.channeling and duration or self.max - duration))
+        end
 end
 
 ----------------------------------------------------------------------------------------
 -- Auras
 ----------------------------------------------------------------------------------------
 function NP.CreateAuras(self)
-    self.Auras = CreateFrame("Frame", nil, self)
-    self.Auras:SetPoint("BOTTOMRIGHT", self.Health, "TOPRIGHT", 0, C.font.nameplates_font_size + 5)
-    self.Auras.initialAnchor = "BOTTOMRIGHT"
-    self.Auras["growth-y"] = "UP"
-    self.Auras["growth-x"] = "LEFT"
-    self.Auras.numDebuffs = C.nameplate.trackDebuffs and 6 or 0
-    self.Auras.numBuffs = C.nameplate.trackBuffs and 4 or 0
-    self.Auras:SetSize(20 + C.nameplate.width, C.nameplate.aurasSize)
-    self.Auras.spacing = 5
-    self.Auras.size = C.nameplate.aurasSize - 3
-    self.Auras.disableMouse = true
+        self.Auras = CreateFrame("Frame", nil, self)
+        self.Auras:SetPoint("BOTTOMRIGHT", self.Health, "TOPRIGHT", 0, C.font.nameplates.name[2] + 2)
+        self.Auras.initialAnchor = "BOTTOMRIGHT"
+        self.Auras["growth-y"] = "UP"
+        self.Auras["growth-x"] = "LEFT"
+        self.Auras.numDebuffs = C.nameplate.trackDebuffs and 6 or 0
+        self.Auras.numBuffs = C.nameplate.trackBuffs and 4 or 0
+        self.Auras:SetSize(20 + C.nameplate.width, C.nameplate.aurasSize)
+        self.Auras.spacing = 5
+        self.Auras.size = C.nameplate.aurasSize - 3
+        self.Auras.disableMouse = true
 
-    self.Auras.FilterAura = NP.AurasCustomFilter
-    self.Auras.PostCreateButton = NP.AurasPostCreateIcon
-    self.Auras.PostUpdateButton = NP.AurasPostUpdateIcon
-end
-
-----------------------------------------------------------------------------------------
--- Debuffs
-----------------------------------------------------------------------------------------
-function NP.CreateDebuffs(self)
-    self.Debuffs = CreateFrame("Frame", self:GetName() .. "_Debuffs", self)
-    self.Debuffs:SetHeight(R.frameHeight * 3)
-    self.Debuffs:SetWidth(C.unitframes.frameWidth + 4)
-    self.Debuffs.size = C.auras.playerDebuffSize
-    self.Debuffs.spacing = 3
-    self.Debuffs.initialAnchor = "BOTTOMLEFT"
-    self.Debuffs["growth-y"] = "UP"
-    self.Debuffs["growth-x"] = "RIGHT"
-    if (R.class == "DEATHKNIGHT" or R.class == "DRUID" or R.class == "ROGUE" or R.class == "SHAMAN" or R.class == "WARLOCK") then
-        self.Debuffs:SetPoint("BOTTOMRIGHT", self, "TOPRIGHT", 2, 6)
-    end
-
-    self.Debuffs.PostCreateButton = NP.PostCreateIcon
-    self.Debuffs.PostUpdateButton = NP.PostUpdateIcon
+        self.Auras.FilterAura = NP.AurasCustomFilter
+        self.Auras.PostCreateButton = NP.AurasPostCreateIcon
+        self.Auras.PostUpdateButton = NP.AurasPostUpdateIcon
 end
 
 ----------------------------------------------------------------------------------------
@@ -376,29 +443,31 @@ function NP.CreateRaidIcon(self, unit)
     --     UnitIsFriend("player", unit) and 2 or -2,
     --     UnitIsFriend("player", unit) and 0 or 4)
 
-        
-        self.RaidTargetIndicator:SetPoint("RIGHT", self.Name, "LEFT", 0, 0)
+
+    self.RaidTargetIndicator:SetPoint("BOTTOM", self.Name, "TOP", 0, 0)
 end
 
 ----------------------------------------------------------------------------------------
 -- Class Icon
 ----------------------------------------------------------------------------------------
 function NP.CreateQuestIcon(self)
-    self.QuestIcon = self:CreateTexture(nil, "OVERLAY", nil, 7)
-    self.QuestIcon:SetSize((C.font.nameplates.name[2] * 2), (C.font.nameplates.name[2] * 2))
-    self.QuestIcon:SetPoint("BOTTOM", self.Name, "TOP", 0, 2)
-    self.QuestIcon:Hide()
+    -- self.QuestIcon = self:CreateTexture(nil, "OVERLAY", nil, 7)
+    -- self.QuestIcon:SetSize((C.font.nameplates_name_font_size * 5), (C.font.nameplates_name_font_size * 5))
+    -- self.QuestIcon:SetPoint("CENTER", self.Portrait, "CENTER", 0, 0)
+    -- self.QuestIcon:Hide()
 
-    self.QuestIcon.Text = self:CreateFontString(nil, "OVERLAY")
-    self.QuestIcon.Text:SetPoint("CENTER", self.QuestIcon, "CENTER", .5, 0)
-    self.QuestIcon.Text:SetJustifyH("CENTER")
-    self.QuestIcon.Text:SetFont(unpack(C.font.nameplates.quest))
-    self.QuestIcon.Text:SetShadowOffset(1, -1)
+    -- self.QuestIcon.Text = self:CreateFontString(nil, "OVERLAY")
+    -- self.QuestIcon.Text:SetPoint("CENTER", self.QuestIcon, "CENTER", .5, 0)
+    -- self.QuestIcon.Text:SetJustifyH("CENTER")
+    -- self.QuestIcon.Text:SetFont(C.font.nameplates_font, 6,
+    --     C.font.nameplates_font_style)
+    -- self.QuestIcon.Text:SetShadowOffset(C.font.nameplates_font_shadow and 1 or 0,
+    --     C.font.nameplates_font_shadow and -1 or 0)
 
-    self.QuestIcon.Item = self:CreateTexture(nil, "OVERLAY")
-    self.QuestIcon.Item:SetSize((C.font.nameplates.name[2] * 1.5), (C.font.nameplates.name[2] * 1.5))
-    self.QuestIcon.Item:SetPoint("BOTTOM", self.Name, "TOP", 0, 2)
-    self.QuestIcon.Item:SetTexCoord(0.1, 0.9, 0.1, 0.9)
+    -- self.QuestIcon.Item = self:CreateTexture(nil, "OVERLAY")
+    -- self.QuestIcon.Item:SetSize((C.font.nameplates_name_font_size * 5.5), (C.font.nameplates_name_font_size * 5.5))
+    -- self.QuestIcon.Item:SetPoint("CENTER", self.Portrait, "CENTER", 0, 0)
+    -- self.QuestIcon.Item:SetTexCoord(0.1, 0.9, 0.1, 0.9)
 end
 
 return NP

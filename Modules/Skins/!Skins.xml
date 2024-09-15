@@ -1,4 +1,4 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/">
-	<Script file="Details1.lua"/>
+	<Script file="Details.lua"/>
 	<Script file="OPie.lua"/>
 </Ui>

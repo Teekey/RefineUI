@@ -1,11 +1,12 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/">
-    <Script file="AdvCombatLog.lua"/>
+    <!-- <Script file="AdvCombatLog.lua"/> -->
     <Script file="CombatCrosshair.lua"/>
     <Script file="CombatCursor.lua"/>
     <Script file="SCT.lua"/>
     <Script file="BWTimeline.lua"/>
     <Script file="AFK.lua"/>
-    <Script file="StickyTarget.lua"/>
-    <Script file="SlotItemLevel.lua"/>
-    <Script file="RaidUtility.lua"/>
+    <Script file="CombatTargeting.lua"/>
+    <Script file="MRTReminder.lua"/>
+    <!-- <Script file="RaidUtility.lua"/> -->
+    <Script file="GuildAchieve.lua"/>
 </Ui>

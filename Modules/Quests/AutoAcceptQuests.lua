@@ -75,7 +75,6 @@ R.InitAutoQuest = function()
         end
     end)
 
-    print("Auto Accept/Complete Quests Loaded")
 end
 
 -- Call this function when your addon loads

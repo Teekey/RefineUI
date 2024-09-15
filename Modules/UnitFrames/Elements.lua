@@ -39,11 +39,11 @@ local function CreateResourceBar(self, numPoints, color, name)
     self.PlayerResources = CreateFrame("Frame", self:GetName() .. "_PlayerResources", self)
     self.PlayerResources:CreateBackdrop("Default")
     self.PlayerResources:SetPoint(unpack(C.position.unitframes.classResources))
-    self.PlayerResources:SetSize(C.unitframes.frameWidth, 7)
+    self.PlayerResources:SetSize(C.unitframes.frameWidth - 4, 8)
 
     for i = 1, numPoints do
         self.PlayerResources[i] = CreateFrame("StatusBar", self:GetName() .. "_" .. name .. i, self.PlayerResources)
-        self.PlayerResources[i]:SetSize((C.unitframes.frameWidth - (numPoints - 1)) / numPoints, 7)
+        self.PlayerResources[i]:SetSize((C.unitframes.frameWidth / numPoints) - 1, 8)
         if i == 1 then
             self.PlayerResources[i]:SetPoint("LEFT", self.PlayerResources)
         else
@@ -64,13 +64,14 @@ end
 ----------------------------------------------------------------------------------------
 -- Unit Frame Configuration
 ----------------------------------------------------------------------------------------
-function UF.ConfigureUnitFrame(self, template)
+function UF.ConfigureUnitFrame(self)
     self.colors = R.oUF_colors
     self:RegisterForClicks("AnyUp")
     self:SetScript("OnEnter", UnitFrame_OnEnter)
     self:SetScript("OnLeave", UnitFrame_OnLeave)
     self:SetAttribute("*type2", "togglemenu")
-    self:SetTemplate(template)
+    self:SetTemplate("Default")
+    self.border:SetFrameLevel(4)
     self:SetHitRectInsets(-10, -10, -50, -10)
     CategorizeUnit(self)
 end
@@ -85,6 +86,7 @@ function UF.CreateHealthBar(self)
     self.Health:SetPoint("TOPLEFT", self, "TOPLEFT", 0, 0)
     self.Health:SetPoint("TOPRIGHT", self, "TOPRIGHT", 0, 0)
     self.Health:SetStatusBarTexture("Interface\\AddOns\\RefineUI\\Media\\Textures\\Health3")
+    self.Health:SetFrameLevel(5)
 
     self.Health.colorTapping = true
     self.Health.colorDisconnected = true
@@ -120,6 +122,7 @@ function UF.CreatePowerBar(self)
     self.Power:SetPoint("TOPLEFT", self.Health, "BOTTOMLEFT", 0, 0)
     self.Power:SetPoint("TOPRIGHT", self.Health, "BOTTOMRIGHT", 0, 0)
     self.Power:SetStatusBarTexture(C.media.texture)
+    self.Power:SetFrameLevel(5)
 
     self.Power.frequentUpdates = true
     self.Power.colorDisconnected = true
@@ -145,12 +148,14 @@ end
 ----------------------------------------------------------------------------------------
 function UF.CreateNameText(self)
     if self.isPartyRaid then
-        self.Name = R.SetFontString(self.Health, unpack(C.font.unitframes.name))
+        self.Name = R.SetFontString(self.Health, unpack(C.font.group.name))
+        self.Name:SetShadowOffset(1, -1)
     elseif self.isSingleUnit then
         self.Name = R.SetFontString(self.Health, unpack(C.font.unitframes.name))
+        self.Name:SetShadowOffset(1, -1)
     end
     self.Name:SetWordWrap(false)
-    self.Name:SetPoint("BOTTOM", self.Health, "TOP", 0, 0)
+    self.Name:SetPoint("BOTTOM", self.Health, "TOP", 0, 1)
     self.Name:SetJustifyH("CENTER")
     if self.isPartyRaid then
         self:Tag(self.Name, "[GetNameColor][NameMedium]")
@@ -159,16 +164,109 @@ function UF.CreateNameText(self)
     end
 end
 
+function UF.CreatePortraitAndCastIcon(self)
+    -- Create a frame to attach the portrait to
+    local PortraitFrame = CreateFrame("Frame", nil, self)
+    PortraitFrame:SetSize(48, 48)
+    PortraitFrame:SetFrameLevel(self:GetFrameLevel() + 2) -- Ensure this is higher than the background
+    PortraitFrame:SetFrameStrata("HIGH")
+    if self.unit == "player" or self.unit == "focus" then
+        PortraitFrame:SetPoint("RIGHT", self, "LEFT", 12, 0)
+    elseif self.unit == "target" or self.unit == "boss" or self.unit == "arena" then
+        PortraitFrame:SetPoint("LEFT", self, "RIGHT", -12, 0)
+    end
+
+
+
+    -- Create a circular border texture for the portrait
+    local BorderTexture = PortraitFrame:CreateTexture(nil, 'OVERLAY')
+    BorderTexture:SetAllPoints(PortraitFrame)
+    BorderTexture:SetTexture("Interface\\AddOns\\RefineUI\\Media\\Textures\\PortraitBorder.blp")
+    BorderTexture:SetVertexColor(unpack(C.media.borderColor))
+    BorderTexture:SetDrawLayer("OVERLAY", 3)
+
+    -- local r, g, b = unpack(R.oUF_colors.interruptible)
+    -- BorderTexture:SetVertexColor(r, g, b)
+
+    -- -- 2D Portrait
+    -- local Portrait = PortraitFrame:CreateTexture(nil, 'OVERLAY')
+    -- Portrait:SetSize(16, 16)
+    -- Portrait:SetPoint('CENTER', PortraitFrame, 'CENTER')
+    -- Portrait:SetDrawLayer("OVERLAY", 2)
+
+
+    local portrait = PortraitFrame:CreateTexture(nil, 'ARTWORK')
+    portrait:SetSize(36, 36)                             -- Change this to match the inner size of the frame
+    portrait:SetPoint('CENTER', PortraitFrame, 'CENTER') -- Center it in the frame
+    portrait:SetDrawLayer("OVERLAY", 2)
+
+    -- Create and apply a circular mask
+    local mask = PortraitFrame:CreateMaskTexture()
+    mask:SetTexture("Interface\\AddOns\\RefineUI\\Media\\Textures\\PortraitMask.blp")
+    mask:SetAllPoints(BorderTexture)
+    portrait:AddMaskTexture(mask)
+
+    -- Background texture for the portrait
+    local BackgroundTexture = PortraitFrame:CreateTexture(nil, 'BACKGROUND') -- Use BACKGROUND layer
+    BackgroundTexture:SetAllPoints(BorderTexture)                            -- Center it over the health bar
+    BackgroundTexture:SetTexture("Interface\\AddOns\\RefineUI\\Media\\Textures\\PortraitBG.blp")
+    BackgroundTexture:SetVertexColor(unpack(C.media.borderColor))            -- Set a color with some transparency
+    BackgroundTexture:SetDrawLayer("OVERLAY", 1)                             -- Ensure it is behind the border and portrait
+
+    -- Background texture for the portrait
+    local PortraitGlow = PortraitFrame:CreateTexture(nil, 'BACKGROUND') -- Use BACKGROUND layer
+    PortraitGlow:SetAllPoints(BorderTexture)                            -- Center it over the health bar
+    PortraitGlow:SetTexture("Interface\\AddOns\\RefineUI\\Media\\Textures\\PortraitGlow.blp")
+    PortraitGlow:SetVertexColor(1, 1, 1, .6)                            -- Set a color with some transparency
+    PortraitGlow:SetDrawLayer("OVERLAY", 1)
+    PortraitGlow:Hide()
+
+    local radialStatusBar = R.CreateRadialStatusBar(PortraitFrame)
+    radialStatusBar:SetAllPoints(PortraitFrame)
+    radialStatusBar:SetTexture("Interface\\AddOns\\RefineUI\\Media\\Textures\\PortraitBorder.blp")
+    radialStatusBar:SetVertexColor(0, 0.8, 0.8, 0.75) -- Teal blue color
+    radialStatusBar:SetFrameStrata("HIGH")
+
+    -- -- Create the text element for quest completion
+    -- local QuestText = PortraitFrame:CreateFontString(nil, "OVERLAY")
+    -- QuestText:SetPoint("CENTER", portrait, "CENTER", 0, -4)
+    -- QuestText:SetJustifyH("CENTER")
+    -- QuestText:SetFont(C.font.nameplates_font, 5, C.font.nameplates_font_style)
+    -- QuestText:SetShadowOffset(C.font.nameplates_font_shadow and 1 or 0, C.font.nameplates_font_shadow and -1 or 0)
+
+    self.CombinedPortrait = portrait
+    self.CombinedPortrait.Text = QuestText
+    self.CombinedPortrait.radialStatusbar = radialStatusBar
+    self.BorderTexture = BorderTexture
+    self.PortraitFrame = PortraitFrame
+    self.PortraitGlow = PortraitGlow
+
+    portrait:Show()
+    radialStatusBar:Show()
+
+    self:HookScript("OnShow", function(self)
+        if self.CombinedPortrait then
+            self.CombinedPortrait:ForceUpdate()
+        end
+    end)
+end
+
 ----------------------------------------------------------------------------------------
 -- Castbar
 ----------------------------------------------------------------------------------------
 function UF.CreateCastBar(self)
     self.Castbar = CreateFrame("StatusBar", self:GetName() .. "_Castbar", self)
     self.Castbar:SetStatusBarTexture("Interface\\AddOns\\RefineUI\\Media\\Textures\\RefineUIBlank.tga", "ARTWORK")
-    self.Castbar:SetPoint("TOP", self, "BOTTOM", 0, -8)
+    self.Castbar:SetPoint("TOP", self, "BOTTOM", 0, 4)
     self.Castbar:SetWidth(C.unitframes.castbarWidth)
-    self.Castbar:SetHeight(C.unitframes.castbarHeight)
+    self.Castbar:SetHeight(C.unitframes.castbarHeight + 10)
     self.Castbar:SetTemplate("Default")
+    self.Castbar:SetFrameLevel(0)
+    self.Castbar.border:SetFrameLevel(1)
+    self.Castbar:SetFrameStrata("LOW")
+    self.Castbar.border:SetFrameStrata("LOW")
+
+
 
     self.Castbar.bg = self.Castbar:CreateTexture(nil, "BORDER")
     self.Castbar.bg:SetAllPoints()
@@ -183,39 +281,65 @@ function UF.CreateCastBar(self)
 
     self.Castbar.Text = R.SetFontString(self.Castbar, unpack(C.font.unitframes.spellname))
     self.Castbar.Text:SetShadowOffset(1, -1)
-    self.Castbar.Text:SetPoint("CENTER", self.Castbar, "CENTER", 0, -1)
+    self.Castbar.Text:SetPoint("BOTTOMLEFT", self.Castbar, "BOTTOMLEFT", 4, 4)
     self.Castbar.Text:SetTextColor(1, 1, 1)
-    self.Castbar.Text:SetJustifyH("CENTER")
+    self.Castbar.Text:SetJustifyH("LEFT")
     self.Castbar.Text:SetWordWrap(false)
 
-    self.Castbar.Button = CreateFrame("Frame", nil, self.Castbar)
-    self.Castbar.Button:SetTemplate("Zero")
-    self.Castbar.Button.border:SetFrameStrata("LOW")
-    self.Castbar.Button:SetWidth(C.unitframes.healthHeight + C.unitframes.powerHeight + C.unitframes.castbarHeight + 9)
-    if self.unit == "player" or self.unit == "focus" then
-        self.Castbar.Button:SetPoint("TOPRIGHT", self.Health, "TOPLEFT", -7, 2)
-        self.Castbar.Button:SetPoint("BOTTOMRIGHT", self.Castbar, "BOTTOMLEFT", -7, -2)
-    elseif self.unit == "target" or self.unit == "boss" or self.unit == "arena" then
-        self.Castbar.Button:SetPoint("TOPLEFT", self.Health, "TOPRIGHT", 7, 2)
-        self.Castbar.Button:SetPoint("BOTTOMLEFT", self.Castbar, "BOTTOMRIGHT", 7, -2)
-    end
+    -- self.Castbar.Button = CreateFrame("Frame", nil, self.Castbar)
+    -- self.Castbar.Button:SetSize(48, 48)
+    -- -- if self.unit == "player" or self.unit == "focus" then
+    --     self.Castbar.Button:SetPoint("RIGHT", self.Castbar, "LEFT", 8, 0)
+    -- -- elseif self.unit == "target" or self.unit == "boss" or self.unit == "arena" then
+    -- --     self.Castbar.Button:SetPoint("LEFT", self.Castbar, "LEFT", 8, 0)
+    -- -- end
+    -- self.Castbar.Button:SetFrameLevel(self.Castbar.border:GetFrameLevel() + 2)
+    -- self.Castbar.Button:SetFrameStrata("HIGH")
 
-    self.Castbar.Icon = SetupTexture(self.Castbar.Button, "ARTWORK", self.Castbar.Button, nil)
-    self.Castbar.Icon:SetPoint("TOPLEFT", self.Castbar.Button, 2, -2)
-    self.Castbar.Icon:SetPoint("BOTTOMRIGHT", self.Castbar.Button, -2, 2)
-    self.Castbar.Icon:SetTexCoord(0.1, 0.9, 0.1, 0.9)
 
-    self.Castbar.Button.Cooldown = CreateFrame("Cooldown", nil, self.Castbar.Button, "CooldownFrameTemplate")
-    self.Castbar.Button.Cooldown:SetSwipeTexture("Interface\\AddOns\\RefineUI\\Media\\Textures\\CDBig.blp")
-    self.Castbar.Button.Cooldown:SetAllPoints(self.Castbar.Button)
-    self.Castbar.Button.Cooldown:SetDrawBling(false)
-    self.Castbar.Button.Cooldown:SetDrawEdge(false)
-    self.Castbar.Button.Cooldown:SetSwipeColor(0, 0, 0, 0.6)
-    self.Castbar.Button.Cooldown:SetReverse(false)
-    self.Castbar.Button.Cooldown:SetFrameLevel(self.Castbar.Button:GetFrameLevel() + 1)
+    -- -- Create a circular border texture for the portrait
+    -- self.Castbar.BorderTexture = self.Castbar.Button:CreateTexture(nil, 'OVERLAY')
+    -- self.Castbar.BorderTexture:SetAllPoints(self.Castbar.Button)
+    -- self.Castbar.BorderTexture:SetTexture("Interface\\AddOns\\RefineUI\\Media\\Textures\\PortraitBorder.blp")
+    -- self.Castbar.BorderTexture:SetVertexColor(.6, .6, .6, 1)
+    -- self.Castbar.BorderTexture:SetDrawLayer("OVERLAY", 3)
 
-    self.Castbar.Time = R.SetFontString(self.Castbar.Button.Cooldown, unpack(C.font.unitframes.spelltime))
-    self.Castbar.Time:SetPoint("CENTER", self.Castbar.Button.Cooldown, "CENTER", 0, 0)
+
+    -- self.Castbar.Icon = self.Castbar.Button:CreateTexture(nil, "ARTWORK")
+    -- self.Castbar.Icon:SetPoint("CENTER", self.Castbar.Button, "CENTER", 0, 0)
+    -- self.Castbar.Icon:SetSize(36, 36)
+    -- self.Castbar.Icon:SetDrawLayer("OVERLAY", 2)
+
+
+
+    -- -- Create and apply a circular mask
+    -- local mask = self.Castbar.Button:CreateMaskTexture()
+    -- mask:SetTexture("Interface\\AddOns\\RefineUI\\Media\\Textures\\PortraitMask.blp")
+    -- mask:SetAllPoints(self.Castbar.BorderTexture)
+    -- self.Castbar.Icon:AddMaskTexture(mask)
+
+    -- -- Background texture for the portrait
+    -- local BackgroundTexture = self.Castbar:CreateTexture(nil, 'BACKGROUND') -- Use BACKGROUND layer
+    -- BackgroundTexture:SetAllPoints(self.Castbar.BorderTexture)                            -- Center it over the health bar
+    -- BackgroundTexture:SetTexture("Interface\\AddOns\\RefineUI\\Media\\Textures\\PortraitBG.blp")
+    -- BackgroundTexture:SetVertexColor(unpack(C.media.borderColor))            -- Set a color with some transparency
+    -- BackgroundTexture:SetDrawLayer("OVERLAY", 1)                             -- Ensure it is behind the border and portrait
+
+
+
+
+    -- self.Castbar.Button.Cooldown = CreateFrame("Cooldown", nil, self.Castbar.Button, "CooldownFrameTemplate")
+    -- self.Castbar.Button.Cooldown:SetSwipeTexture("Interface\\AddOns\\RefineUI\\Media\\Textures\\CDBig.blp")
+    -- self.Castbar.Button.Cooldown:SetAllPoints(self.Castbar.Button)
+    -- self.Castbar.Button.Cooldown:SetDrawBling(false)
+    -- self.Castbar.Button.Cooldown:SetDrawEdge(false)
+    -- self.Castbar.Button.Cooldown:SetSwipeColor(0, 0, 0, 0.6)
+    -- self.Castbar.Button.Cooldown:SetReverse(false)
+    -- self.Castbar.Button.Cooldown:SetFrameLevel(self.Castbar.Button:GetFrameLevel() + 1)
+    -- self.Castbar.Button.Cooldown:SetAlpha(0)
+
+    self.Castbar.Time = R.SetFontString(self.Castbar, unpack(C.font.unitframes.spelltime))
+    self.Castbar.Time:SetPoint("BOTTOMRIGHT", self.Castbar, "BOTTOMRIGHT", 0, 2)
     self.Castbar.Time:SetTextColor(1, 1, 1)
     self.Castbar.Time:SetJustifyH("CENTER")
     self.Castbar.CustomTimeText = UF.CustomCastTimeText
@@ -231,7 +355,7 @@ function UF.CreateDebuffs(self)
     self.Debuffs = CreateFrame("Frame", self:GetName() .. "_Debuffs", self)
     self.Debuffs:SetHeight(R.frameHeight * 3)
     self.Debuffs:SetWidth(C.unitframes.frameWidth + 4)
-    self.Debuffs.size = R.Scale(C.auras.playerDebuffSize)
+    self.Debuffs.size = R.Scale(C.player.debuffSize)
     self.Debuffs.spacing = R.Scale(3)
     self.Debuffs.initialAnchor = "BOTTOMLEFT"
     self.Debuffs["growth-y"] = "UP"
@@ -289,47 +413,38 @@ end
 ----------------------------------------------------------------------------------------
 function UF.CreatePartyAuraWatch(self)
     UF.CreatePlayerBuffWatch(self)
-    UF.CreatePartyBuffWatch(self)
+    -- UF.CreatePartyBuffWatch(self)
 end
 
 function UF.CreateRaidDebuffs(self)
+    -- Raid debuffs
     self.RaidDebuffs = CreateFrame("Frame", nil, self)
     self.RaidDebuffs:SetSize(19, 19)
-    self.RaidDebuffs:SetPoint("CENTER", self, 0, 20)
+    self.RaidDebuffs:SetPoint("BOTTOM", self, "TOP", 0, 24)
     self.RaidDebuffs:SetFrameStrata("MEDIUM")
     self.RaidDebuffs:SetFrameLevel(10)
-    self.RaidDebuffs:SetTemplate("Default")
+    self.RaidDebuffs:SetTemplate("Icon")
 
     self.RaidDebuffs.icon = self.RaidDebuffs:CreateTexture(nil, "BORDER")
     self.RaidDebuffs.icon:SetTexCoord(0.1, 0.9, 0.1, 0.9)
     self.RaidDebuffs.icon:SetPoint("TOPLEFT", 2, -2)
     self.RaidDebuffs.icon:SetPoint("BOTTOMRIGHT", -2, 2)
 
-    -- if C.raidframe.plugins_aura_watch_timer == true then
-    --     self.RaidDebuffs.time = UF.SetFontString(self.RaidDebuffs, C.font.unit_frames_font, C.font.unit_frames_font_size,
-    --         C.font.unit_frames_font_style)
-    --     self.RaidDebuffs.time:SetPoint("CENTER", 1, 1)
-    --     self.RaidDebuffs.time:SetTextColor(1, 1, 1)
-    -- end
 
-    self.RaidDebuffs.count = R.SetFontString(self.RaidDebuffs, C.media.normalFont, 8, "OUTLINE")
+    self.RaidDebuffs.count = R.SetFontString(self.RaidDebuffs, unpack(C.font.auras.smallCount))
     self.RaidDebuffs.count:SetPoint("BOTTOMRIGHT", self.RaidDebuffs, "BOTTOMRIGHT", 3, -1)
     self.RaidDebuffs.count:SetTextColor(1, 1, 1)
 
-    if C.aura.show_spiral == true then
-        self.RaidDebuffs.cd = CreateFrame("Cooldown", nil, self.RaidDebuffs, "CooldownFrameTemplate")
-        self.RaidDebuffs.cd:SetPoint("TOPLEFT", 2, -2)
-        self.RaidDebuffs.cd:SetPoint("BOTTOMRIGHT", -2, 2)
-        self.RaidDebuffs.cd:SetReverse(true)
-        self.RaidDebuffs.cd:SetDrawEdge(false)
-        self.RaidDebuffs.cd.noCooldownCount = true
-        self.RaidDebuffs.parent = CreateFrame("Frame", nil, self.RaidDebuffs)
-        self.RaidDebuffs.parent:SetFrameLevel(self.RaidDebuffs.cd:GetFrameLevel() + 1)
-        if C.raidframe.plugins_aura_watch_timer == true then
-            self.RaidDebuffs.time:SetParent(self.RaidDebuffs.parent)
-        end
-        self.RaidDebuffs.count:SetParent(self.RaidDebuffs.parent)
-    end
+
+    self.RaidDebuffs.cd = CreateFrame("Cooldown", nil, self.RaidDebuffs, "CooldownFrameTemplate")
+    self.RaidDebuffs.cd:SetPoint("TOPLEFT", 2, -2)
+    self.RaidDebuffs.cd:SetPoint("BOTTOMRIGHT", -2, 2)
+    self.RaidDebuffs.cd:SetReverse(true)
+    self.RaidDebuffs.cd:SetDrawEdge(false)
+    self.RaidDebuffs.cd.noCooldownCount = true
+    self.RaidDebuffs.parent = CreateFrame("Frame", nil, self.RaidDebuffs)
+    self.RaidDebuffs.parent:SetFrameLevel(self.RaidDebuffs.cd:GetFrameLevel() + 1)
+    self.RaidDebuffs.count:SetParent(self.RaidDebuffs.parent)
 
     self.RaidDebuffs.ShowDispellableDebuff = true
     self.RaidDebuffs.FilterDispellableDebuff = true
@@ -392,8 +507,8 @@ function UF.CreateClassResources(self)
     if R.class == "MONK" then
         self.Stagger = CreateFrame("StatusBar", self:GetName() .. "_Stagger", self)
         self.Stagger:CreateBackdrop("Default")
-        self.Stagger:SetPoint("BOTTOMLEFT", self, "TOPLEFT", 0, 7)
-        self.Stagger:SetSize(frame_width, 7)
+        self.Stagger:SetPoint("BOTTOM", self, "TOP", 0, 10)
+        self.Stagger:SetSize(C.unitframes.frameWidth - 4, 7)
         self.Stagger:SetStatusBarTexture(C.media.texture)
 
         self.Stagger.bg = self.Stagger:CreateTexture(nil, "BORDER")
@@ -401,9 +516,9 @@ function UF.CreateClassResources(self)
         self.Stagger.bg:SetTexture(C.media.texture)
         self.Stagger.bg.multiplier = 0.2
 
-        self.Stagger.Text = UF.SetFontString(self.Stagger, C.font.unitframes_font, C.font.unitframes_font_size,
-            C.font.unitframes_font_style)
-        self.Stagger.Text:SetPoint("CENTER", self.Stagger, "CENTER", 0, 0)
+        -- self.Stagger.Text = UF.SetFontString(self.Stagger, C.font.unitframes_font, C.font.unitframes_font_size,
+        --     C.font.unitframes_font_style)
+        -- self.Stagger.Text:SetPoint("CENTER", self.Stagger, "CENTER", 0, 0)
     end
 
     if R.class == "SHAMAN" then
@@ -440,13 +555,13 @@ function UF.CreateClassResources(self)
     --     end
     -- end
 
-    -- Additional mana
-    if R.class == "DRUID" or R.class == "PRIEST" or R.class == "SHAMAN" then
-        CreateFrame("Frame"):SetScript("OnUpdate", function() UF.UpdateClassMana(self) end)
-        self.ClassMana = UF.SetFontString(self.Power, C.font.unitframes_font, C.font.unitframes_font_size,
-            C.font.unitframes_font_style)
-        self.ClassMana:SetTextColor(1, 0.49, 0.04)
-    end
+    -- -- Additional mana
+    -- if R.class == "DRUID" or R.class == "PRIEST" or R.class == "SHAMAN" then
+    --     CreateFrame("Frame"):SetScript("OnUpdate", function() UF.UpdateClassMana(self) end)
+    --     self.ClassMana = UF.SetFontString(self.Power, C.font.unitframes_font, C.font.unitframes_font_size,
+    --         C.font.unitframes_font_style)
+    --     self.ClassMana:SetTextColor(1, 0.49, 0.04)
+    -- end
 end
 
 function UF.CreateRuneBar(self)
@@ -656,20 +771,6 @@ function UF.CreateInfo(self)
     self.FlashInfo.ManaLevel = R.SetFontString(self.FlashInfo, unpack(C.font.unitframes.default))
     self.FlashInfo.ManaLevel:SetPoint("CENTER", self.Power, "CENTER", 0, 1)
 
-    -- Combat icon
-    if C.unitframes.iconsCombat then
-        self.CombatIndicator = self.Health:CreateTexture(nil, "OVERLAY")
-        self.CombatIndicator:SetSize(18, 18)
-        self.CombatIndicator:SetPoint("TOPRIGHT", 4, 8)
-    end
-
-    -- Resting icon
-    if C.unitframes.iconsResting then
-        self.RestingIndicator = self.Health:CreateTexture(nil, "OVERLAY")
-        self.RestingIndicator:SetSize(18, 18)
-        self.RestingIndicator:SetPoint("BOTTOMLEFT", self, "BOTTOMLEFT", -8, -8)
-    end
-
     self.Status = R.SetFontString(self.Health, unpack(C.font.unitframes.default))
     self.Status:SetPoint("CENTER", self.Power, "CENTER", 0, 1)
     self.Status:SetTextColor(0.69, 0.31, 0.31)
@@ -723,8 +824,8 @@ end
 function UF.CreateGroupIcons(self)
     -- Raid mark
     self.RaidTargetIndicator = self.Health:CreateTexture(nil, "OVERLAY")
-    self.RaidTargetIndicator:SetSize(12 * C.group.icon_multiplier, 12 * C.group.icon_multiplier)
-    self.RaidTargetIndicator:SetPoint("BOTTOMLEFT", self.Health, -2, -5)
+    self.RaidTargetIndicator:SetSize(24, 24)
+    self.RaidTargetIndicator:SetPoint("RIGHT", self.Health, -2, 0)
 
     -- LFD role icons
     self.GroupRoleIndicator = self.Health:CreateTexture(nil, "OVERLAY")
@@ -732,18 +833,18 @@ function UF.CreateGroupIcons(self)
     self.GroupRoleIndicator:SetPoint("BOTTOMLEFT", self.Health, "TOPLEFT", -4, 2)
 
     -- Ready check icons
-    self.ReadyCheckIndicator = self.Health:CreateTexture(nil, "OVERLAY")
-    self.ReadyCheckIndicator:SetSize(12 * C.group.icon_multiplier, 12 * C.group.icon_multiplier)
-    self.ReadyCheckIndicator:SetPoint("BOTTOMRIGHT", self.Health, 2, 1)
+    self.ReadyCheckIndicator = self.Health:CreateTexture(nil, "OVERLAY", nil, 7) -- Increased draw level to 7
+    self.ReadyCheckIndicator:SetSize(36, 36)
+    self.ReadyCheckIndicator:SetPoint("CENTER", self.Health, 2, 1)
 
     -- Summon icons
     self.SummonIndicator = self.Health:CreateTexture(nil, "OVERLAY")
-    self.SummonIndicator:SetSize(24 * C.group.icon_multiplier, 24 * C.group.icon_multiplier)
+    self.SummonIndicator:SetSize(36, 36)
     self.SummonIndicator:SetPoint("BOTTOMRIGHT", self.Health, 7, -11)
 
     -- Phase icons
     self.PhaseIndicator = self.Health:CreateTexture(nil, "OVERLAY")
-    self.PhaseIndicator:SetSize(20 * C.group.icon_multiplier, 20 * C.group.icon_multiplier)
+    self.PhaseIndicator:SetSize(36, 36)
     self.PhaseIndicator:SetPoint("TOPRIGHT", self.Health, 5, 5)
 
     -- Leader/Assistant icons
@@ -764,8 +865,8 @@ end
 
 function UF.CreateExperienceBar(self)
     -- Position and size
-    local Experience = CreateFrame('StatusBar', nil, self)
-    Experience:SetPoint("TOP", Minimap, "BOTTOM", 0, -13)
+    local Experience = CreateFrame('StatusBar', "RefineUI_ExperienceBar", UIParent)
+    Experience:SetPoint(unpack(C.position.unitframes.experienceBar))
     Experience:SetSize(296, 27)
     Experience:EnableMouse(true) -- for tooltip/fading support
     Experience:SetTemplate("Default")

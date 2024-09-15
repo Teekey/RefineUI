@@ -13,7 +13,7 @@ local function CreateNameplate(self, unit)
     local isDead = UnitIsDead(unit)
     local visible = nameplate:IsVisible()
     if not isDead and not visible then
-        RunNextFrame(function() main:Show() end)
+        C_Timer.After(0, function() main:Show() end)
     end
     
     NP.ConfigureNameplate(self, unit)
@@ -36,10 +36,6 @@ local function CreateNameplate(self, unit)
 
     if C.nameplate.targetGlow then
         NP.CreateTargetGlow(self)
-    end
-
-    if C.nameplate.quests then
-        NP.CreateQuestIcon(self)
     end
 
     NP.CreateAuras(self)

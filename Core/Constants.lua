@@ -13,6 +13,55 @@ R.color = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[R.class]
 R.screenWidth, R.screenHeight = GetPhysicalScreenSize()
 R.newPatch = select(4, GetBuildInfo()) >= 110000
 
+----------------------------------------------------------------------------------------
+--	Player's role and level check
+----------------------------------------------------------------------------------------
+local isCaster = {
+	DEATHKNIGHT = {nil, nil, nil},
+	DEMONHUNTER = {nil, nil},
+	DRUID = {true},					-- Balance
+	HUNTER = {nil, nil, nil},
+	MAGE = {true, true, true},
+	MONK = {nil, nil, nil},
+	PALADIN = {nil, nil, nil},
+	PRIEST = {nil, nil, true},		-- Shadow
+	ROGUE = {nil, nil, nil},
+	SHAMAN = {true},				-- Elemental
+	WARLOCK = {true, true, true},
+	WARRIOR = {nil, nil, nil},
+	EVOKER = {true}
+}
+
+local function CheckRoleAndLevel(_, _, level)
+	local spec = GetSpecialization()
+	local role = spec and GetSpecializationRole(spec)
+
+	R.Spec = spec
+	if role == "TANK" then
+		R.Role = "Tank"
+	elseif role == "HEALER" then
+		R.Role = "Healer"
+	elseif role == "DAMAGER" then
+		if isCaster[R.class][spec] then
+			R.Role = "Caster"
+		else
+			R.Role = "Melee"
+		end
+	end
+
+	if level then
+		R.level = level
+	end
+end
+
+local Updater = CreateFrame("Frame")
+Updater:RegisterEvent("PLAYER_ENTERING_WORLD")
+Updater:RegisterEvent("PLAYER_TALENT_UPDATE")
+Updater:RegisterEvent("PLAYER_LEVEL_UP")
+Updater:SetScript("OnEvent", CheckRoleAndLevel)
+
+
+
 -- BETA
 GetContainerItemInfo = function(bagIndex, slotIndex)
 	local info = C_Container.GetContainerItemInfo(bagIndex, slotIndex)

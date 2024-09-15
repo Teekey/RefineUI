@@ -52,14 +52,14 @@ font.nameplates = {
 font.unitframes = {
 	default = { C.media.normalFont, 10, "OUTLINE" },
 	health = { C.media.normalFont, 16, "OUTLINE" },
-	name = { C.media.normalFont, 18, "THICKOUTLINE" },
+	name = { C.media.normalFont, 18, "OUTLINE" },
 	spellname = { C.media.normalFont, 12, "OUTLINE" },
 	spelltime = { C.media.boldFont, 14, "OUTLINE" },
 }
 
 -- Unit frames fonts
 font.group = {
-	name = { C.media.normalFont, 16, "THICKOUTLINE" },
+	name = { C.media.normalFont, 14, "THICKOUTLINE" },
 }
 
 -- Auras fonts
@@ -73,6 +73,13 @@ font.auras = {
 	smallCount = { C.media.normalFont, 10, "OUTLINE" },
 }
 
+-- Nameplates fonts
+font.actionbars = {
+	hotkey = { C.media.normalFont, 12, "OUTLINE" },
+	count = { C.media.normalFont, 8, "OUTLINE" },
+}
+
+
 -- Filger bar fonts
 font.filger = {
 	main = { C.media.normalFont, 8, "OUTLINE" },
@@ -83,7 +90,7 @@ font.filger = {
 -- BW Timeline fonts
 font.bwt = {
 	default = { C.media.normalFont, 12, "OUTLINE" },
-	duration = { C.media.normalFont, 12, "OUTLINE" },
+	duration = { C.media.boldFont, 12, "OUTLINE" },
 	tick = { C.media.normalFont, 10, "OUTLINE" },
 }
 

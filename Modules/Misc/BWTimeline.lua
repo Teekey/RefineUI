@@ -123,6 +123,7 @@ function BWT:updateTimelineBar()
                 t.text:SetTextColor(unpack(C.bwtimeline.bar_tick_text_color))
 
                 t.text:SetFont(unpack(C.font.bwt.tick))
+                t.text:SetShadowOffset(1, -1)
                 t.text:SetText(i * C.bwtimeline.bar_tick_spacing)
             else
                 t.text:Hide()
@@ -139,37 +140,62 @@ local FRAME_ID_COUNTER = 0
 local framePool = {}
 
 local function createIconFrame()
+    local f
     if #framePool > 0 then
-        return tremove(framePool)
+        f = tremove(framePool)
+        -- Reset frame properties here
+    else
+        f = CreateFrame("Frame", nil, UIParent, frameTemplate)
+        f:SetFrameStrata("MEDIUM")
+
+        f.icon = f:CreateTexture(nil, "ARTWORK")
+        f.icon:SetAllPoints()
+
+        f.nameText = f:CreateFontString(nil, "OVERLAY")
+        f.nameText:SetFont(unpack(C.font.bwt.default))
+        f.nameText:SetShadowOffset(1, -1)
+
+        f.durationText = f:CreateFontString(nil, "OVERLAY")
+        f.durationText:SetFont(unpack(C.font.bwt.duration))
+        f.durationText:SetShadowOffset(1, -1)
+        f.durationText:SetPoint("CENTER")
+
+        FRAME_ID_COUNTER = FRAME_ID_COUNTER + 1
+        f.id = FRAME_ID_COUNTER
     end
-
-    local f = CreateFrame("Frame", nil, UIParent, frameTemplate)
-    f:SetFrameStrata("MEDIUM")
-
-    f.icon = f:CreateTexture(nil, "ARTWORK")
-    f.icon:SetAllPoints()
-
-    f.nameText = f:CreateFontString(nil, "OVERLAY")
-    f.durationText = f:CreateFontString(nil, "OVERLAY")
-    f.durationText:SetPoint("CENTER")
-
-    FRAME_ID_COUNTER = FRAME_ID_COUNTER + 1
-    f.id = FRAME_ID_COUNTER
-
+    
+    -- Always set the template and reset the border color for both new and reused frames
+    f:SetTemplate("Icon")
+    f.border:SetBackdropBorderColor(unpack(C.media.borderColor))
+    
     return f
 end
 
 function BWT:updateFrameParameters(frame)
     frame:SetSize(C.bwtimeline.icons_width, C.bwtimeline.icons_height)
     frame:SetFrameLevel(frame.bar_:GetFrameLevel() + 4)
+    
+    -- Check if the icon name contains the player's name
+    local playerName = UnitName("player")
+    if frame.name:find(playerName) then
+        frame.textColor = C.mrtreminder.barColor or {0, 1, 0, 1}
+        local borderColor = C.mrtreminder.barColor or {0, 1, 0, 1}
+        frame.border:SetBackdropBorderColor(unpack(borderColor))
+    else
+        frame.textColor = C.bwtimeline.icons_name_color or {1, 1, 1, 1}
+        frame.border:SetBackdropBorderColor(unpack(C.media.borderColor))
+    end
+
+    -- Ensure fonts are set for both nameText and durationText
+    frame.nameText:SetFont(unpack(C.font.bwt.default))
+    frame.durationText:SetFont(unpack(C.font.bwt.duration))
 
     if C.bwtimeline.icons_name then
         frame.nameText:Show()
-        frame.nameText:SetFont(unpack(C.font.bwt.default))
         frame.nameText:ClearAllPoints()
         local a1, a2 = unpack(dirToAnchors[C.bwtimeline.icons_name_position])
-        frame.nameText:SetPoint(a2, frame, a1)
-        frame.nameText:SetTextColor(unpack(C.bwtimeline.icons_name_color))
+        frame.nameText:SetPoint(a2, frame, a1, 4, 0)
+        frame.nameText:SetTextColor(unpack(frame.textColor))
 
         local name = frame.name
         if C.bwtimeline.icons_name_number then
@@ -184,9 +210,6 @@ function BWT:updateFrameParameters(frame)
 
     if C.bwtimeline.icons_duration then
         frame.durationText:Show()
-        frame.durationText:SetFont(unpack(C.font.bwt.duration))
-        local a1, a2 = unpack(dirToAnchors[C.bwtimeline.icons_duration_position])
-        frame.durationText:SetPoint(a2, frame, a1)
         frame.durationText:SetTextColor(unpack(C.bwtimeline.icons_duration_color))
     else
         frame.durationText:Hide()
@@ -255,6 +278,11 @@ function frameOnUpdate(frame)
     if dur <= maxTime then
         -- The actual positioning is handled in updateAnchors
         BWT:scheduleAnchorUpdate(bar)
+
+        -- Change the frame's strata to appear above other icons
+        if frame:GetFrameStrata() ~= "HIGH" then
+            frame:SetFrameStrata("HIGH")
+        end
     end
 
     if t > frame.expTime then
@@ -263,9 +291,14 @@ function frameOnUpdate(frame)
 end
 
 function BWT:createTimelineIcon(spellID, name, duration, iconID, customSettings)
+    if not duration or type(duration) ~= "number" or duration <= 0 then
+        print("Invalid duration for timeline icon:", name, duration)
+        return
+    end
+
     local frame = createIconFrame()
     local bar = self.bar
-
+    
     frame.bar_ = bar
     frame.iconSettings = customSettings or C.bwtimeline.icons
     frame.name = name
@@ -291,7 +324,6 @@ function BWT:createTimelineIcon(spellID, name, duration, iconID, customSettings)
     frame:SetParent(bar)
     frame:SetFrameLevel(bar:GetFrameLevel() + 4)
     frame:SetScript("OnUpdate", frameOnUpdate)
-    frame:SetTemplate("Icon")
     frame:Show()
 end
 

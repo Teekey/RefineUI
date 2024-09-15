@@ -15,7 +15,7 @@
     <Script file="UIWidget.lua"/>
     <Script file="Vehicle.lua"/>
     <!-- <Script file="EditMode.lua"/> -->
-    <Script file="Loot.lua"/>
+    <!-- <Script file="Loot.lua"/> -->
     <Script file="Character.lua"/>
     <Script file="Container.lua"/>
     <Script file="Quest.lua"/>

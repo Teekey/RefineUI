@@ -368,33 +368,21 @@ if C["filger_spells"] and C["filger_spells"]["ALL"] then
 	end
 end
 
-for _, spell in pairs(C.filger.buff_spells_list) do
+for _, spell in pairs(C.filger.left_buffs_list) do
 	if spell[2] == R.class then
 		tinsert(R.CustomFilgerSpell, {"LEFT_BUFF", {spellID = spell[1], unitID = "player", caster = "player", filter = "BUFF", absID = true, custom = true}})
 	end
 end
 
-for _, spell in pairs(C.filger.proc_spells_list) do
+for _, spell in pairs(C.filger.right_buffs_list) do
 	if spell[2] == R.class then
 		tinsert(R.CustomFilgerSpell, {"RIGHT_BUFF", {spellID = spell[1], unitID = "player", caster = "player", filter = "BUFF", absID = true, custom = true}})
 	end
 end
 
-for _, spell in pairs(C.filger.debuff_spells_list) do
+for _, spell in pairs(C.filger.bottom_buffs_list) do
 	if spell[2] == R.class then
-		tinsert(R.CustomFilgerSpell, {"T_DEBUFF_ICON", {spellID = spell[1], unitID = "target", caster = "player", filter = "DEBUFF", absID = true, custom = true}})
-	end
-end
-
-for _, spell in pairs(C.filger.cd_spells_list) do
-	if spell[2] == R.class then
-		tinsert(R.CustomFilgerSpell, {"COOLDOWN", {spellID = spell[1], filter = "CD", absID = true, custom = true}})
-	end
-end
-
-for _, spell in pairs(C.filger.ignore_spells_list) do
-	if spell[2] == R.class then
-		R.FilgerIgnoreSpell[GetSpellInfo(spell[1])] = true
+		tinsert(R.CustomFilgerSpell, {"BOTTOM_BUFF", {spellID = spell[1], unitID = "player", caster = "player", filter = "BUFF", absID = true, custom = true}})
 	end
 end
 

@@ -7,187 +7,149 @@ local R, C, L = unpack(RefineUI)
 local _, ns = ...
 local oUF = ns.oUF
 
-local GUIDs = {}
+-- Use local references for frequently accessed globals
+local CreateFrame, GetSpellInfo, UnitAura, UnitGUID = CreateFrame, GetSpellInfo, UnitAura, UnitGUID
+local pairs, next, setmetatable = pairs, next, setmetatable
 
+-- Upvalue constants
 local PLAYER_UNITS = {
-	player = true,
-	vehicle = true,
-	pet = true,
+    player = true,
+    vehicle = true,
+    pet = true,
 }
 
-local setupGUID
-do
-	local cache = setmetatable({}, {__type = "k"})
+-- Use a single table for GUIDs to reduce table creation/deletion
+local GUIDs = setmetatable({}, {__mode = "k"})
 
-	local frame = CreateFrame("Frame")
-	frame:SetScript("OnEvent", function()
-		for k,t in pairs(GUIDs) do
-			GUIDs[k] = nil
-			for a in pairs(t) do
-				t[a] = nil
-			end
-			cache[t] = true
-		end
-	end)
-	frame:RegisterEvent("PLAYER_REGEN_ENABLED")
-	frame:RegisterEvent("PLAYER_ENTERING_WORLD")
-
-	function setupGUID(guid)
-		local t = next(cache)
-		if t then
-			cache[t] = nil
-		else
-			t = {}
-		end
-		GUIDs[guid] = t
-	end
+-- Optimize setupGUID function
+local function setupGUID(guid)
+    if not GUIDs[guid] then
+        GUIDs[guid] = setmetatable({}, {__mode = "k"})
+    end
+    return GUIDs[guid]
 end
 
+-- Optimize icon management functions
 local function resetIcon(icon, count, duration, remaining)
-	icon:Show()
-	if icon.cd then
-		if duration and duration > 0 then
-			icon.cd:SetCooldown(remaining - duration, duration)
-			icon.cd:Show()
-		else
-			icon.cd:Hide()
-		end
-	end
-	if icon.count then
-		icon.count:SetText((count > 1 and count or ""))
-	end
-	icon:SetAlpha(1)
+    icon:Show()
+    if icon.cd then
+        if duration and duration > 0 then
+            icon.cd:SetCooldown(remaining - duration, duration)
+            icon.cd:Show()
+        else
+            icon.cd:Hide()
+        end
+    end
+    if icon.count then
+        icon.count:SetText(count > 1 and count or "")
+    end
+    icon:SetAlpha(1)
 end
 
 local function expireIcon(icon)
-	if icon.cd then icon.cd:Hide() end
-	if icon.count then icon.count:SetText() end
-	icon:SetAlpha(0)
-	icon:Show()
+    if icon.cd then icon.cd:Hide() end
+    if icon.count then icon.count:SetText("") end
+    icon:SetAlpha(0)
+    icon:Show()
 end
 
-local found = {}
+-- Optimize Update function
 local function Update(frame, _, unit)
-	if frame.unit ~= unit then return end
-	local watch = frame.AuraWatch
-	local index, icons = 1, watch.watched
-	local _, name, count, duration, remaining, caster, key, icon, spellID
-	local filter = "HELPFUL"
-	local guid = UnitGUID(unit)
-	if not guid then return end
-	if not GUIDs[guid] then setupGUID(guid) end
+    if frame.unit ~= unit then return end
+    local watch = frame.AuraWatch
+    local icons = watch.watched
+    local guid = UnitGUID(unit)
+    if not guid then return end
+    
+    local guidTable = setupGUID(guid)
+    
+    for _, icon in pairs(icons) do
+        icon:Hide()
+    end
 
-	for _, icon in pairs(icons) do
-		icon:Hide()
-	end
+    for i = 1, 40 do
+        local name, _, count, _, duration, remaining, caster, _, _, spellID = UnitAura(unit, i)
+        if not name then break end
+        
+        local key = watch.strictMatching and spellID or name
+        local icon = icons[key]
+        
+        if icon and not R.RaidBuffsIgnore[spellID] and (icon.anyUnit or (caster and icon.fromUnits and icon.fromUnits[caster])) then
+            resetIcon(icon, count, duration, remaining)
+            guidTable[key] = true
+        end
+    end
 
-	while true do
-		name, _, count, _, duration, remaining, caster, _, _, spellID = UnitAura(unit, index, filter)
-		if not name then
-			if filter == "HELPFUL" then
-				filter = "HARMFUL"
-				index = 1
-			else
-				break
-			end
-		else
-			if watch.strictMatching then
-				key = spellID
-			else
-				key = name
-			end
-			icon = icons[key]
-			if icon and not R.RaidBuffsIgnore[spellID] and (icon.anyUnit or (caster and icon.fromUnits and icon.fromUnits[caster])) then
-				resetIcon(icon, count, duration, remaining)
-				GUIDs[guid][key] = true
-				found[key] = true
-			end
-			index = index + 1
-		end
-	end
-
-	for key in pairs(GUIDs[guid]) do
-		if icons[key] and not found[key] then
-			expireIcon(icons[key])
-		end
-	end
-
-	for k in pairs(found) do
-		found[k] = nil
-	end
+    for key, icon in pairs(icons) do
+        if not guidTable[key] then
+            expireIcon(icon)
+        end
+    end
 end
 
+-- Optimize setupIcons function
 local function setupIcons(self)
-	local watch = self.AuraWatch
-	local icons = watch.icons
-	watch.watched = {}
+    local watch = self.AuraWatch
+    local icons = watch.icons
+    watch.watched = {}
 
-	for _, icon in pairs(icons) do
-		local name, _, image = GetSpellInfo(icon.spellID)
-		if name then
-			icon.name = name
+    for _, icon in pairs(icons) do
+        local name, _, image = GetSpellInfo(icon.spellID)
+        if name then
+            icon.name = name
 
-			if not icon.cd and not (watch.hideCooldown or icon.hideCooldown) then
-				local cd = CreateFrame("Cooldown", nil, icon, "CooldownFrameTemplate")
-				cd:SetSwipeTexture("Interface\\AddOns\\RefineUI\\Media\\Textures\\CDAura.blp")
-				cd:SetPoint("TOPLEFT", icon, "TOPLEFT", -1, 1)
-				cd:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 1, -1)
-				cd:SetDrawEdge(false)
-				cd:SetReverse(true)
-				icon.cd = cd
-			end
+            if not icon.cd and not (watch.hideCooldown or icon.hideCooldown) then
+                local cd = CreateFrame("Cooldown", nil, icon, "CooldownFrameTemplate")
+                cd:SetSwipeTexture("Interface\\AddOns\\RefineUI\\Media\\Textures\\CDAura.blp")
+                cd:SetAllPoints(icon)
+                cd:SetDrawEdge(false)
+                cd:SetReverse(true)
+                icon.cd = cd
+            end
 
-			if not icon.icon then
-				local tex = icon:CreateTexture(nil, "BACKGROUND")
-				tex:SetAllPoints(icon)
-				tex:SetTexture(image)
-				icon.icon = tex
-			end
+            if not icon.icon then
+                local tex = icon:CreateTexture(nil, "BACKGROUND")
+                tex:SetAllPoints(icon)
+                tex:SetTexture(image)
+                icon.icon = tex
+            end
 
-			if not icon.count and not (watch.hideCount or icon.hideCount) then
-				local count = icon:CreateFontString(nil, "OVERLAY")
-				count:SetFontObject(NumberFontNormal)
-				count:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", -1, 0)
-				icon.count = count
-			end
+            if not icon.count and not (watch.hideCount or icon.hideCount) then
+                local count = icon:CreateFontString(nil, "OVERLAY")
+                count:SetFontObject(NumberFontNormal)
+                count:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", -1, 0)
+                icon.count = count
+            end
 
-			if icon.fromUnits == nil then
-				icon.fromUnits = watch.fromUnits or PLAYER_UNITS
-			end
-			if icon.anyUnit == nil then
-				icon.anyUnit = watch.anyUnit
-			end
+            icon.fromUnits = icon.fromUnits or watch.fromUnits or PLAYER_UNITS
+            icon.anyUnit = icon.anyUnit == nil and watch.anyUnit or icon.anyUnit
 
-			if watch.strictMatching then
-				watch.watched[icon.spellID] = icon
-			else
-				watch.watched[name] = icon
-			end
+            watch.watched[watch.strictMatching and icon.spellID or name] = icon
 
-			if watch.PostCreateIcon then watch:PostCreateIcon(icon, icon.spellID, name, self) end
-		else
-			print("|cffff0000RefineUI: AuraWatch spell ID ["..tostring(icon.spellID).."] no longer exists!|r")
-		end
-	end
+            if watch.PostCreateIcon then watch:PostCreateIcon(icon, icon.spellID, name, self) end
+        else
+            print("|cffff0000RefineUI: AuraWatch spell ID ["..tostring(icon.spellID).."] no longer exists!|r")
+        end
+    end
 end
 
+-- Keep Enable and Disable functions largely the same
 local function Enable(self)
-	if self.AuraWatch then
-		self:RegisterEvent("UNIT_AURA", Update)
-		setupIcons(self)
-		return true
-	else
-		return false
-	end
+    if self.AuraWatch then
+        self:RegisterEvent("UNIT_AURA", Update)
+        setupIcons(self)
+        return true
+    end
+    return false
 end
 
 local function Disable(self)
-	if self.AuraWatch then
-		self:UnregisterEvent("UNIT_AURA", Update)
-		for _, icon in pairs(self.AuraWatch.icons) do
-			icon:Hide()
-		end
-	end
+    if self.AuraWatch then
+        self:UnregisterEvent("UNIT_AURA", Update)
+        for _, icon in pairs(self.AuraWatch.icons) do
+            icon:Hide()
+        end
+    end
 end
 
 oUF:AddElement("AuraWatch", Update, Enable, Disable)

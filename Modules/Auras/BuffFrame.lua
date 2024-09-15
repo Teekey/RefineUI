@@ -32,14 +32,14 @@ end
 ----------------------------------------------------------------------------------------
 local BuffsAnchor = CreateFrame("Frame", "RefineUI_Buffs", UIParent)
 BuffsAnchor:SetPoint(unpack(C.position.playerBuffs))
-BuffsAnchor:SetSize((16 * C.aura.playerBuffSize) + 42, (C.aura.playerBuffSize * 2) + 3)
+BuffsAnchor:SetSize((16 * C.player.buffSize) + 42, (C.player.buffSize * 2) + 3)
 
 ----------------------------------------------------------------------------------------
 --	Aura Update Functions
 ----------------------------------------------------------------------------------------
 local function FlashAura(aura, timeLeft)
     if timeLeft and timeLeft < 10 then  -- Check if the remaining time is less than 10 seconds
-        local alpha = (math.sin(GetTime() * 3) + 1) / 2  -- Create a flashing effect
+        local alpha = (math.sin(GetTime() * 5) + 1) / 2  -- Create a flashing effect
         alpha = alpha * 0.5 + 0.5  -- Scale to ensure alpha is between 0.5 and 1
         aura:SetAlpha(alpha)  -- Set the aura's alpha based on the sine wave
     else
@@ -49,7 +49,7 @@ end
 
 local function UpdateDuration(aura, timeLeft)
     local duration = aura.Duration
-    if timeLeft and C.aura.showTimer == true then
+    if timeLeft and C.player.buffTimer == true then
         duration:SetVertexColor(1, 1, 1)
         duration:SetFormattedText(GetFormattedTime(timeLeft))
         FlashAura(aura, timeLeft)  -- Call the FlashAura function
@@ -63,11 +63,7 @@ local function UpdateBorderColor(aura)
     if aura.TempEnchantBorder:IsShown() then
         aura.border:SetBackdropBorderColor(0.6, 0.1, 0.6) -- Purple for temporary enchant
     elseif aura.buttonInfo and aura.buttonInfo.duration and aura.buttonInfo.duration > 0 then
-        if C.aura.playerBuffClassColor == true then
-            aura.border:SetBackdropBorderColor(unpack(C.media.classBorderColor)) -- Class color for buffs with duration
-        else
             aura.border:SetBackdropBorderColor(0, 1, 0, 1)                       -- Green for timed buffs
-        end
     else
         aura.border:SetBackdropBorderColor(unpack(C.media.borderColor)) -- Default for permanent buffs
     end
@@ -84,6 +80,23 @@ local function UpdateCooldownSwipe(aura)
     UpdateBorderColor(aura)
 end
 
+local function UpdateAura(aura)
+    local timeLeft = aura.buttonInfo and aura.buttonInfo.expirationTime and (aura.buttonInfo.expirationTime - GetTime())
+    
+    if timeLeft and timeLeft > 0 and C.player.buffTimer == true then
+        aura.Duration:SetVertexColor(1, 1, 1)
+        aura.Duration:SetFormattedText(GetFormattedTime(timeLeft))
+        aura.Duration:Show()
+        FlashAura(aura, timeLeft)
+    else
+        aura.Duration:Hide()
+        aura:SetAlpha(1)  -- Reset alpha for passive buffs or when timer is disabled
+    end
+    
+    UpdateCooldownSwipe(aura)
+    UpdateBorderColor(aura)
+end
+
 ----------------------------------------------------------------------------------------
 --	Buff Frame Styling and Layout
 ----------------------------------------------------------------------------------------
@@ -91,7 +104,7 @@ hooksecurefunc(BuffFrame.AuraContainer, "UpdateGridLayout", function(self, auras
     local previousBuff, aboveBuff
     for index, aura in ipairs(auras) do
         -- Set size and template
-        aura:SetSize(C.aura.playerBuffSize, C.aura.playerBuffSize)
+        aura:SetSize(C.player.buffSize, C.player.buffSize)
         aura:SetTemplate("Zero")
 
         aura.TempEnchantBorder:SetAlpha(0)
@@ -107,13 +120,13 @@ hooksecurefunc(BuffFrame.AuraContainer, "UpdateGridLayout", function(self, auras
         -- Position auras in grid layout
         aura:ClearAllPoints()
         if (index > 1) and (mod(index, rowbuffs) == 1) then
-            aura:SetPoint("TOP", aboveBuff, "BOTTOM", 0, -6)
+            aura:SetPoint("TOP", aboveBuff, "BOTTOM", 0, -C.player.buffSpacing)
             aboveBuff = aura
         elseif index == 1 then
             aura:SetPoint("TOPRIGHT", BuffsAnchor, "TOPRIGHT", 0, 0)
             aboveBuff = aura
         else
-            aura:SetPoint("RIGHT", previousBuff, "LEFT", -6, 0)
+            aura:SetPoint("RIGHT", previousBuff, "LEFT", -C.player.buffSpacing, 0)
         end
 
         previousBuff = aura
@@ -172,16 +185,16 @@ hooksecurefunc(BuffFrame.AuraContainer, "UpdateGridLayout", function(self, auras
         UpdateCooldownSwipe(aura)
 
         -- Hook Update function for cooldown swipe
-        if not aura.cooldownHook then
+        if not aura.updateHook then
             hooksecurefunc(aura, "Update", function(self, buttonInfo)
                 self.buttonInfo = buttonInfo
-                UpdateCooldownSwipe(self)
+                UpdateAura(self)
             end)
-            aura.cooldownHook = true
+            aura.updateHook = true
         end
 
-        -- Initial update of cooldown swipe and border color
-        UpdateCooldownSwipe(aura)
+        -- Initial update
+        UpdateAura(aura)
     end
 end)
 

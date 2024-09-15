@@ -26,7 +26,7 @@ local function GameTooltipDefault(tooltip, parent)
 		tooltip:SetPoint("BOTTOMRIGHT", TooltipAnchor, "BOTTOMRIGHT", 0, 0)
 		tooltip.default = 1
 	end
-	if InCombatLockdown() and C.tooltip.hide_combat and not IsShiftKeyDown() then
+	if InCombatLockdown() and C.tooltip.hideCombat and not IsShiftKeyDown() then
 		tooltip:Hide()
 	end
 end

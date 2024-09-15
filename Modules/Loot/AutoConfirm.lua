@@ -1,5 +1,5 @@
 local R, C, L = unpack(RefineUI)
-if C.loot.auto_confirm_de ~= true then return end
+if C.loot.autoConfirmDE ~= true then return end
 
 ----------------------------------------------------------------------------------------
 --	Disenchant confirmation(tekKrush by Tekkub)

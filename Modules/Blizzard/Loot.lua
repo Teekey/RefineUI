@@ -3,7 +3,7 @@ local R, C, L = unpack(RefineUI)
 ----------------------------------------------------------------------------------------
 --	Loot skin
 ----------------------------------------------------------------------------------------
-local function LoadSkin()
+-- local function LoadSkin()
     -- -- Loot History frame
     -- local frame = GroupLootHistoryFrame
     -- frame:StripTextures()
@@ -126,25 +126,25 @@ local function LoadSkin()
     -- LootFrame:StripTextures(true)
     -- LootFrame:SetTemplate("Transparent")
     -- T.SkinCloseButton(LootFrame.ClosePanelButton)
-    hooksecurefunc(LootFrameElementMixin, "Init", function(button)
-        local item = button.Item
-        if item and not item.styled then
-            item:SetTemplate("Icon")
-            item.border:SetFrameStrata("HIGH")
+--     hooksecurefunc(LootFrameElementMixin, "Init", function(button)
+--         local item = button.Item
+--         if item and not item.styled then
+--             item:SetTemplate("Icon")
+--             item.border:SetFrameStrata("HIGH")
 
-            local slotIndex = button:GetSlotIndex()
-            local _, _, _, _, itemQuality = GetLootSlotInfo(slotIndex)
-            local color = ITEM_QUALITY_COLORS[itemQuality] and ITEM_QUALITY_COLORS[itemQuality].color
+--             local slotIndex = button:GetSlotIndex()
+--             local _, _, _, _, itemQuality = GetLootSlotInfo(slotIndex)
+--             local color = ITEM_QUALITY_COLORS[itemQuality] and ITEM_QUALITY_COLORS[itemQuality].color
 
-            if itemQuality then
-                item.border:SetBackdropBorderColor(color.r, color.g, color.b)
-            else
-                item.border:SetBackdropBorderColor(unpack(C.media.borderColor))
-            end
+--             if itemQuality then
+--                 item.border:SetBackdropBorderColor(color.r, color.g, color.b)
+--             else
+--                 item.border:SetBackdropBorderColor(unpack(C.media.borderColor))
+--             end
 
-            item.styled = true
-        end
-    end)
-end
+--             item.styled = true
+--         end
+--     end)
+-- end
 
-tinsert(R.SkinFuncs["RefineUI"], LoadSkin)
+-- tinsert(R.SkinFuncs["RefineUI"], LoadSkin)

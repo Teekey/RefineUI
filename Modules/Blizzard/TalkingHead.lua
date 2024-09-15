@@ -1,5 +1,15 @@
 local R, C, L = unpack(RefineUI)
 
+----------------------------------------------------------------------------------------
+--	Hide TalkingHeadFrame
+----------------------------------------------------------------------------------------
+if C.general.hideTalkingHead == true then
+	hooksecurefunc(TalkingHeadFrame, "PlayCurrent", function()
+		TalkingHeadFrame:Hide()
+	end)
+	return
+end
+
 ------------------------------------------------------------------------------------------
 --	Set custom position for TalkingHeadFrame
 ------------------------------------------------------------------------------------------
@@ -17,11 +27,4 @@ hooksecurefunc(TalkingHeadFrame, "SetPoint", function(self, _, _, _, x)
 		self:ClearAllPoints()
 		self:SetPoint(unpack(C.position.talkingHead))
 	end
-end)
-
-----------------------------------------------------------------------------------------
---	Hide TalkingHeadFrame
-----------------------------------------------------------------------------------------
-hooksecurefunc(TalkingHeadFrame, "PlayCurrent", function()
-	TalkingHeadFrame:Hide()
 end)

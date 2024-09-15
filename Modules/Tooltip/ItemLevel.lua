@@ -1,5 +1,5 @@
 local R, C, L = unpack(RefineUI)
-if C.tooltip.average_lvl ~= true then return end
+if C.tooltip.averageiLvl ~= true then return end
 
 ----------------------------------------------------------------------------------------
 --	Equipped average item level(AverageItemLevel by Semlar)
@@ -426,7 +426,7 @@ end
 
 TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Unit, function(self)
 	if self ~= GameTooltip or self:IsForbidden() then return end
-	if C.tooltip.show_shift and not IsShiftKeyDown() then return end
+	if C.tooltip.showShift and not IsShiftKeyDown() then return end
 	local _, unitID = self:GetUnit()
 	local guid = unitID and UnitGUID(unitID)
 	if guid and UnitIsPlayer(unitID) then

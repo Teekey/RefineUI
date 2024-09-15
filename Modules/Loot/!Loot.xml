@@ -1,7 +1,5 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/">
 	<Script file="AutoConfirm.lua"/>
-	<Script file="AutoGreed.lua"/>
 	<Script file="FasterLoot.lua"/>
-	<Script file="IconQuality.lua"/>
 	<Script file="LootFilter.lua"/>
 </Ui>

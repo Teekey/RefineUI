@@ -8,6 +8,9 @@ if not C.lootfilter or C.lootfilter.enable ~= true then return end
 --  It filters loot based on various criteria including item quality, price, and type.
 --  Based on Ghuul Addons: Selective Autoloot v1.7.2
 ----------------------------------------------------------------------------------------
+-- Set autoLootDefault to 0
+SetCVar("autoLootDefault", "0")
+
 
 local LootFilter = CreateFrame("Frame")
 LootFilter:SetScript("OnEvent", function(self, event, ...) self[event](self, ...) end)
@@ -78,12 +81,12 @@ local function ShouldLootItem(itemDetails, isFishingLoot)
     end
 
     -- Quality threshold
-    if itemDetails.Quality >= C.lootfilter.min_quality then
+    if itemDetails.Quality >= C.lootfilter.minQuality then
         return true
     end
 
     -- Vendor price override
-    if (itemDetails.Price or 0) >= GoldToCopper(C.lootfilter.gear_price_override) then
+    if (itemDetails.Price or 0) >= GoldToCopper(C.lootfilter.gearPriceOverride) then
         return true
     end
 
@@ -100,12 +103,12 @@ local function ShouldLootItem(itemDetails, isFishingLoot)
     -- Fishing loot
     if isFishingLoot then
         return (itemDetails.Type == "Tradeskill" and itemDetails.Subtype == "Cooking")
-            or (itemDetails.Quality == 0 and (itemDetails.Price or 0) >= GoldToCopper(C.lootfilter.junk_minprice))
+            or (itemDetails.Quality == 0 and (itemDetails.Price or 0) >= GoldToCopper(C.lootfilter.junkMinPrice))
     end
 
     -- Tradeskill reagents
-    if itemDetails.Type == "Tradeskill" and tContains(C.lootfilter.tradeskill_subtypes, itemDetails.Subtype) then
-        return itemDetails.Quality >= C.lootfilter.tradeskill_min_quality
+    if itemDetails.Type == "Tradeskill" and tContains(C.lootfilter.tradeskillSubtypes, itemDetails.Subtype) then
+        return itemDetails.Quality >= C.lootfilter.tradeskillMinQuality
     end
 
     -- Armor/weapon
@@ -118,13 +121,13 @@ local function ShouldLootItem(itemDetails, isFishingLoot)
             local sourceID = select(2, C_TransmogCollection.GetItemInfo(itemDetails.Link))
             if sourceID then
                 local sourceInfo = C_TransmogCollection.GetSourceInfo(sourceID)
-                if C.lootfilter.gear_unknown and not sourceInfo.isCollected then
+                if C.lootfilter.gearUnknown and not sourceInfo.isCollected then
                     return true
                 end
             end
         end
 
-        if itemDetails.Quality >= C.lootfilter.gear_min_quality then
+        if itemDetails.Quality >= C.lootfilter.gearMinQuality then
             return true
         end
     end
@@ -155,7 +158,7 @@ local function ProcessLoot()
             elseif isQuestItem or slotType == 2 or slotType == 3 then
                 tinsert(LootableSlots, i)
             elseif itemDetails and itemDetails.Quality == 0 and not IsFishingLoot() then
-                if (itemDetails.Price or 0) < GoldToCopper(C.lootfilter.junk_minprice) then
+                if (itemDetails.Price or 0) < GoldToCopper(C.lootfilter.junkMinPrice) then
                     print(format("|cFFFFD200Filtered:|r %s%s (Below junk min price)", iconString, link or "Unknown Junk Item"))
                 else
                     tinsert(LootableSlots, i)
@@ -185,8 +188,9 @@ function LootFilter:LOOT_OPENED()
         for i = 1, #LootableSlots do
             LootSlot(LootableSlots[i])
         end
-        CloseLoot()
     end
+    -- Close the loot window after processing all items
+    CloseLoot()
 end
 
 function LootFilter:LOOT_CLOSED()

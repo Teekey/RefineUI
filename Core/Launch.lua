@@ -4,12 +4,9 @@ local R, C, L = unpack(RefineUI)
 
 C.nameplate.debuffsList = {}
 C.nameplate.buffsList = {}
-C.filger.buff_spells_list = {}
-C.filger.proc_spells_list = {}
-C.filger.debuff_spells_list = {}
-C.filger.aura_bar_spells_list = {}
-C.filger.cd_spells_list = {}
-C.filger.ignore_spells_list = {}
+C.filger.left_buffs_list = {}
+C.filger.right_buffs_list = {}
+C.filger.bottom_buffs_list = {}
 
 ----------------------------------------------------------------------------------------
 --	First Time Launch and On Login file
@@ -34,25 +31,16 @@ local function InstallUI()
 	SetCVar("taintLog", 0)
 	SetCVar("buffDurations", 1)
 	SetCVar("autoOpenLootHistory", 0)
-	SetCVar("lossOfControl", 0)
+	SetCVar("lossOfControl", 1)
 	SetCVar("nameplateShowAll", 1)
 	SetCVar("nameplateShowSelf", 0)
 	SetCVar("nameplateShowFriendlyNPCs", 1)
-
-
+	SetCVar("lootUnderMouse", 1)
 
 	-- Reset saved variables on char
 	RefineUISettings = {}
-
 	RefineUISettings.Install = true
-	RefineUISettings.FogOfWar = true
 	RefineUISettings.Coords = true
-	RefineUISettings.Archaeology = false
-	RefineUISettings.BarsLocked = false
-	RefineUISettings.SplitBars = true
-	RefineUISettings.RightBars = 3
-	RefineUISettings.MainBars = 3
-	RefineUISettings.BottomBars = 2
 
 	ReloadUI()
 end
@@ -60,8 +48,10 @@ end
 ----------------------------------------------------------------------------------------
 --	Boss Banner Hider
 ----------------------------------------------------------------------------------------
-BossBanner.PlayBanner = function() end
-BossBanner:UnregisterAllEvents()
+if C.general.hideBanner == true then
+	BossBanner.PlayBanner = function() end
+	BossBanner:UnregisterAllEvents()
+end
 
 ----------------------------------------------------------------------------------------
 --	Easy delete good items
@@ -121,14 +111,7 @@ OnLogon:SetScript("OnEvent", function(self)
 	if RefineUIPositions == nil then RefineUIPositions = {} end
 	if RefineUISettings == nil then RefineUISettings = {} end
 	if RefineUIItems == nil then RefineUIItems = {} end
-	if RefineUISettings.FogOfWar == nil then RefineUISettings.FogOfWar = true end
 	if RefineUISettings.Coords == nil then RefineUISettings.Coords = true end
-	if RefineUISettings.Archaeology == nil then RefineUISettings.Archaeology = false end
-	if RefineUISettings.BarsLocked == nil then RefineUISettings.BarsLocked = false end
-	if RefineUISettings.SplitBars == nil then RefineUISettings.SplitBars = true end
-	if RefineUISettings.RightBars == nil then RefineUISettings.RightBars = 3 end
-	if RefineUISettings.MainBars == nil then RefineUISettings.MainBars = 3 end
-	if RefineUISettings.BottomBars == nil then RefineUISettings.BottomBars = 2 end
 
 	if R.screenWidth < 1024 and GetCVar("gxMonitor") == "0" then
 		SetCVar("useUiScale", 0)

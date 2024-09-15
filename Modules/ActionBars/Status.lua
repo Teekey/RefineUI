@@ -96,50 +96,6 @@ frame:RegisterEvent("ACTIONBAR_SLOT_CHANGED")
 R.UpdateButtonState = UpdateButtonState
 
 
-local _G = _G
-local frame = CreateFrame("Frame", nil, UIParent)
-
--- Local function to hide button text
-local function HideButtonText(button)
-    local hotkey = _G[button .. "HotKey"]
-    local name = _G[button .. "Name"]
-
-    -- Hide both hotkey and name if they exist
-    if hotkey then
-        hotkey:Hide()
-        hotkey.Show = function() end  -- Disable Show method
-    end
-    if name then
-        name:Hide()
-        name.Show = function() end  -- Disable Show method
-    end
-end
-
--- Local function to set up button behavior
-local function SetupButton(button)
-    HideButtonText(button)  -- Hide the button text immediately
-end
-
--- Local function to hook binds for action buttons
-local function HookBinds()
-    for _, bar in ipairs({ "Action", "MultiBarBottomLeft", "MultiBarBottomRight", "MultiBarRight", "MultiBarLeft", "MultiBar5", "MultiBar6", "MultiBar7" }) do
-        for btnnum = 1, 12 do
-            local btn = bar .. "Button" .. btnnum
-            if _G[btn] then
-                SetupButton(btn)
-            end
-        end
-    end
-end
-
--- Register the frame for the ADDON_LOADED event
-frame:RegisterEvent("ADDON_LOADED")
-frame:SetScript("OnEvent", function(_, event, name)
-    if event == "ADDON_LOADED" and name == "RefineUI" then
-        HookBinds()
-    end
-end)
-
 ExtraActionButton1.style:SetAlpha(0)
 ExtraActionButton1.style:Hide()
 

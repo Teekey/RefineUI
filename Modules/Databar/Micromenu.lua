@@ -6,7 +6,7 @@ local f = CreateFrame("Frame", "GuildOnlineCountFrame", UIParent)
 -- Create a separate frame for the text overlay
 local textFrame = CreateFrame("Frame", nil, UIParent)
 textFrame:SetFrameStrata("HIGH")
-textFrame:SetFrameLevel(100)  -- Set a high frame level to ensure it's on top
+textFrame:SetFrameLevel(100) -- Set a high frame level to ensure it's on top
 
 -- Create text overlay
 local text = textFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -47,7 +47,7 @@ local function UpdateGuildOnlineCount()
         _, numOnline = GetOnlineGuildMembers()
     end
     text:SetText(numOnline > 0 and numOnline or "")
-    
+
     -- Update text position
     textFrame:SetAllPoints(GuildMicroButton)
     text:ClearAllPoints()
@@ -106,39 +106,40 @@ hooksecurefunc("UpdateMicroButtons", UpdateGuildOnlineCount)
 -- Modify the Guild button tooltip
 GuildMicroButton:HookScript("OnEnter", function(self)
     if not IsInGuild() then return end
-    
+
     local onlineMembers, numOnlineMembers = GetOnlineGuildMembers()
-    
+
     GameTooltip:AddLine(" ")
     GameTooltip:AddLine("Online Guild Members (" .. numOnlineMembers .. ")")
-    
+
     local currentRank = nil
     for i, member in ipairs(onlineMembers) do
-        if i > 30 then  -- Limit to 30 names to prevent tooltip from becoming too large
+        if i > 30 then -- Limit to 30 names to prevent tooltip from becoming too large
             GameTooltip:AddLine("... and " .. (numOnlineMembers - 30) .. " more")
             break
         end
-        
+
         -- Add rank header if it's a new rank
         if currentRank ~= member.rank then
             GameTooltip:AddLine(" ")
-            GameTooltip:AddLine("----" .. member.rank .. "----")  -- Yellow color for rank headers
+            GameTooltip:AddLine("----" .. member.rank .. "----") -- Yellow color for rank headers
             currentRank = member.rank
         end
-        
-        local classColor = RAID_CLASS_COLORS[member.class] or RAID_CLASS_COLORS["PRIEST"]  -- Default to priest color if unknown
+
+        local classColor = RAID_CLASS_COLORS[member.class] or
+        RAID_CLASS_COLORS["PRIEST"]                                                       -- Default to priest color if unknown
         local statusIcon = (member.status == 1 and "|TInterface\\FriendsFrame\\StatusIcon-Away:14:14:0:0|t")
-                        or (member.status == 2 and "|TInterface\\FriendsFrame\\StatusIcon-DnD:14:14:0:0|t")
-                        or ""
+            or (member.status == 2 and "|TInterface\\FriendsFrame\\StatusIcon-DnD:14:14:0:0|t")
+            or ""
         GameTooltip:AddDoubleLine(
             statusIcon .. member.name,
             "Level " .. member.level,
             classColor.r, classColor.g, classColor.b,
-            1, 1, 1  -- White color for level
+            1, 1, 1 -- White color for level
         )
     end
-    
-    GameTooltip:Show()  -- Refresh the tooltip to show new lines
+
+    GameTooltip:Show() -- Refresh the tooltip to show new lines
 end)
 
 
@@ -153,15 +154,15 @@ function FriendsMicroButtonMixin:OnLoad()
     self:RegisterEvent("BN_FRIEND_ACCOUNT_ONLINE");
     self:RegisterEvent("BN_FRIEND_ACCOUNT_OFFLINE");
     self:RegisterEvent("BN_FRIEND_INFO_CHANGED");
-    
+
     self:RegisterForClicks("LeftButtonUp", "RightButtonUp");
     self:SetScript("OnClick", self.OnClick);
     self:SetScript("OnEnter", self.OnEnter);
     self:SetScript("OnLeave", self.OnLeave);
-    
+
     -- Set up custom textures
     self.iconPath = "interface/chatframe/ui-chaticon-battlenet.blp"
-    
+
     -- Create background textures
     self.Background = self:CreateTexture(nil, "BACKGROUND");
     self.Background:SetAtlas("UI-HUD-MicroMenu-SocialJournal-Up", true);
@@ -194,7 +195,7 @@ function FriendsMicroButtonMixin:OnEvent(event, ...)
     elseif event == "UPDATE_BINDINGS" then
         self.tooltipText = MicroButtonTooltipText(SOCIAL_BUTTON, "TOGGLESOCIAL");
     elseif event == "FRIENDLIST_UPDATE" or event == "BN_FRIEND_ACCOUNT_ONLINE" or
-           event == "BN_FRIEND_ACCOUNT_OFFLINE" or event == "BN_FRIEND_INFO_CHANGED" then
+        event == "BN_FRIEND_ACCOUNT_OFFLINE" or event == "BN_FRIEND_INFO_CHANGED" then
         self:UpdateFriendCount();
     end
     self:UpdateMicroButton();
@@ -223,7 +224,8 @@ function FriendsMicroButtonMixin:GetFriendsTooltip()
                 local gameAccount = friendAccInfo.gameAccountInfo
                 local charName = gameAccount.characterName or "N/A"
                 local zone = gameAccount.areaName or "N/A"
-                tooltip = tooltip .. string.format("%s - %s\n", friendAccInfo.accountName, charName .. " (" .. zone .. ")");
+                tooltip = tooltip ..
+                string.format("%s - %s\n", friendAccInfo.accountName, charName .. " (" .. zone .. ")");
             end
         end
         tooltip = tooltip .. "\n";
@@ -277,32 +279,32 @@ function FriendsMicroButtonMixin:UpdateMicroButton()
     if FriendsFrame and FriendsFrame:IsShown() then
         self:SetPushed();
         -- Move the icon when the social menu is open
-        self.Icon:SetPoint("CENTER", self, "CENTER", 1, 1)  -- Adjusted position
+        self.Icon:SetPoint("CENTER", self, "CENTER", 1, 1) -- Adjusted position
     else
         self:SetNormal();
         -- Reset the icon position when the social menu is closed
-        self.Icon:SetPoint("CENTER", self, "CENTER", 0, 2)  -- Original position
+        self.Icon:SetPoint("CENTER", self, "CENTER", 0, 2) -- Original position
     end
 
     -- Check if the game menu is open
     if GameMenuFrame and GameMenuFrame:IsShown() then
-        self:DisableButton()  -- Disable the button when the game menu is open
+        self:DisableButton()      -- Disable the button when the game menu is open
     else
-        self:EnableButton()  -- Enable the button when the game menu is closed
-        self:UpdateFriendCount();  -- Update friend count if the menu is not open
+        self:EnableButton()       -- Enable the button when the game menu is closed
+        self:UpdateFriendCount(); -- Update friend count if the menu is not open
     end
 end
 
 function FriendsMicroButtonMixin:DisableButton()
-    self:EnableMouse(false)  -- Make the button non-interactive
-    self.Icon:SetDesaturated(true)  -- Desaturate the icon
-    self.Icon:SetAlpha(0.5)  -- Set alpha to 50%
+    self:EnableMouse(false)        -- Make the button non-interactive
+    self.Icon:SetDesaturated(true) -- Desaturate the icon
+    self.Icon:SetAlpha(0.5)        -- Set alpha to 50%
 end
 
 function FriendsMicroButtonMixin:EnableButton()
-    self:EnableMouse(true)  -- Make the button interactive
-    self.Icon:SetDesaturated(false)  -- Restore the icon color
-    self.Icon:SetAlpha(1)  -- Set alpha to full (100%)
+    self:EnableMouse(true)          -- Make the button interactive
+    self.Icon:SetDesaturated(false) -- Restore the icon color
+    self.Icon:SetAlpha(1)           -- Set alpha to full (100%)
 end
 
 function FriendsMicroButtonMixin:SetNormal()
@@ -331,9 +333,9 @@ function FriendsMicroButtonMixin:UpdateFriendCount()
         end
     end
 
-    local numWoWOnline = C_FriendList.GetNumOnlineFriends() or 0;  -- Ensure numWoWOnline is not nil
-    local totalOnline = numBNetOnline + numWoWOnline;  -- Calculate total online friends
-    self.FriendCount:SetText(totalOnline > 0 and totalOnline or "");  -- Update button text to show online count
+    local numWoWOnline = C_FriendList.GetNumOnlineFriends() or 0;    -- Ensure numWoWOnline is not nil
+    local totalOnline = numBNetOnline + numWoWOnline;                -- Calculate total online friends
+    self.FriendCount:SetText(totalOnline > 0 and totalOnline or ""); -- Update button text to show online count
 end
 
 -- Function to create a tooltip for friends
@@ -430,13 +432,13 @@ local function InitializeFriendsMicroButton()
     FriendsMicroButton:Show();
 
     -- Hook the tooltip function to the FriendsMicroButton
-    FriendsMicroButton:HookScript("OnEnter", CreateFriendsTooltip)  -- Moved here
+    FriendsMicroButton:HookScript("OnEnter", CreateFriendsTooltip) -- Moved here
 
     return FriendsMicroButton
 end
 
 
--- hook the UpdateMicroButtons function to include our new button
+-- hook the UpdateMicroButtons function to properly position our button
 hooksecurefunc("UpdateMicroButtons", function()
     if FriendsMicroButton then
         FriendsMicroButton:UpdateMicroButton();
@@ -448,32 +450,28 @@ hooksecurefunc(MicroMenuContainer, "Layout", function(self)
     if FriendsMicroButton then
         -- Recalculate the width of the MicroMenuContainer
         local containerWidth = 0
-        local buttonSpacing = -2  -- Adjust this value if needed
-        
+        local buttonSpacing = -2 -- Adjust this value if needed
+        local buttons = {}
+
+        -- Collect all visible buttons
         for _, buttonName in ipairs(MICRO_BUTTONS) do
             local button = _G[buttonName]
             if button and button:IsShown() then
+                table.insert(buttons, button)
                 containerWidth = containerWidth + button:GetWidth() + buttonSpacing
             end
         end
-        
+
         -- Set the new width of the MicroMenuContainer
-        self:SetWidth(containerWidth - buttonSpacing)  -- Subtract the last spacing
-        
-        -- Align the first button to the left of the container
-        local firstButton = _G[MICRO_BUTTONS[1]]
-        if firstButton then
-            firstButton:ClearAllPoints()
-            firstButton:SetPoint("TOPLEFT", self, "TOPLEFT", 0, 0)
-        end
-        
+        self:SetWidth(containerWidth - buttonSpacing) -- Subtract the last spacing
+
         -- Position all buttons
-        for i = 2, #MICRO_BUTTONS do
-            local button = _G[MICRO_BUTTONS[i]]
-            local prevButton = _G[MICRO_BUTTONS[i-1]]
-            if button and prevButton then
-                button:ClearAllPoints()
-                button:SetPoint("TOPLEFT", prevButton, "TOPRIGHT", buttonSpacing, 0)
+        for i, button in ipairs(buttons) do
+            button:ClearAllPoints()
+            if i == 1 then
+                button:SetPoint("TOPLEFT", self, "TOPLEFT", 0, 0)
+            else
+                button:SetPoint("TOPLEFT", buttons[i - 1], "TOPRIGHT", buttonSpacing, 0)
             end
         end
     end
@@ -505,4 +503,192 @@ hooksecurefunc("MicroButtonPulse", HidePulse)
 -- Initialize the button
 FriendsMicroButton = InitializeFriendsMicroButton()
 
+GreatVaultMicroButtonMixin = CreateFromMixins(MainMenuBarMicroButtonMixin);
 
+function GreatVaultMicroButtonMixin:OnLoad()
+    self:RegisterEvent("PLAYER_ENTERING_WORLD");
+    self:RegisterEvent("WEEKLY_REWARDS_UPDATE");
+
+    self:RegisterForClicks("LeftButtonUp", "RightButtonUp");
+    self:SetScript("OnClick", self.OnClick);
+    self:SetScript("OnEnter", self.OnEnter);
+    self:SetScript("OnLeave", self.OnLeave);
+
+    -- Set up custom textures
+    self.iconAtlas = "GreatVault-32x32"  -- This is the atlas name
+
+    -- Create background textures
+    self.Background = self:CreateTexture(nil, "BACKGROUND");
+    self.Background:SetAtlas("UI-HUD-MicroMenu-GreatVault-Up", true);
+    self.Background:SetAllPoints(self);
+
+    self.PushedBackground = self:CreateTexture(nil, "BACKGROUND");
+    self.PushedBackground:SetAtlas("UI-HUD-MicroMenu-GreatVault-Down", true);
+    self.PushedBackground:SetAllPoints(self);
+    self.PushedBackground:Hide();
+
+    -- Create a frame to hold the icon
+    self.IconFrame = CreateFrame("Frame", nil, self)
+    self.IconFrame:SetSize(32, 32)
+    self.IconFrame:SetPoint("CENTER", self, "CENTER", 0, -1)
+
+    -- Create icon texture
+    self.Icon = self.IconFrame:CreateTexture(nil, "ARTWORK");
+    self.Icon:SetAtlas(self.iconAtlas);
+    self.Icon:SetAllPoints(self.IconFrame);
+
+    self.isChecking = false;
+    self:UpdateMicroButton();
+end
+
+function GreatVaultMicroButtonMixin:OnEvent(event, ...)
+    if event == "PLAYER_ENTERING_WORLD" or event == "WEEKLY_REWARDS_UPDATE" then
+        self:UpdateMicroButton();
+    end
+end
+
+function GreatVaultMicroButtonMixin:UpdateMicroButton()
+    if WeeklyRewardsFrame and WeeklyRewardsFrame:IsShown() then
+        self:SetPushed();
+    else
+        self:SetNormal();
+    end
+
+    if GameMenuFrame and GameMenuFrame:IsShown() then
+        self:DisableButton()      -- Disable the button when the game menu is open
+    else
+        self:EnableButton()       -- Enable the button when the game menu is closed
+    end
+
+    -- If we're checking and the window is closed, stop checking
+    if self.isChecking and not (WeeklyRewardsFrame and WeeklyRewardsFrame:IsShown()) then
+        self:StopChecking();
+    end
+end
+
+function GreatVaultMicroButtonMixin:SetNormal()
+    self.Background:Show();
+    self.PushedBackground:Hide();
+    self.Icon:SetVertexColor(1, 1, 1);
+    self.IconFrame:SetPoint("CENTER", self, "CENTER", 0, -1);
+    self:SetButtonState("NORMAL", true);
+end
+
+function GreatVaultMicroButtonMixin:SetPushed()
+    self.Background:Hide();
+    self.PushedBackground:Show();
+    self.Icon:SetVertexColor(0.5, 0.5, 0.5);
+    self.IconFrame:SetPoint("CENTER", self, "CENTER", 1, -2);
+    self:SetButtonState("PUSHED", true);
+end
+
+function GreatVaultMicroButtonMixin:EnableButton()
+    self:Enable();
+    self.Icon:SetDesaturated(false);
+    self.Icon:SetAlpha(1);
+end
+
+function GreatVaultMicroButtonMixin:DisableButton()
+    self:Disable();
+    self.Icon:SetDesaturated(true);
+    self.Icon:SetAlpha(0.5);
+end
+
+function GreatVaultMicroButtonMixin:OnClick(button)
+    if self:IsEnabled() then
+        WeeklyRewards_ShowUI();
+        self:StartChecking();
+    end
+end
+
+function GreatVaultMicroButtonMixin:StartChecking()
+    if not self.isChecking then
+        self.isChecking = true;
+        self.updateTimer = C_Timer.NewTicker(0.1, function() self:UpdateMicroButton() end)
+    end
+end
+
+function GreatVaultMicroButtonMixin:StopChecking()
+    if self.isChecking then
+        self.isChecking = false;
+        if self.updateTimer then
+            self.updateTimer:Cancel()
+            self.updateTimer = nil;
+        end
+    end
+end
+
+function GreatVaultMicroButtonMixin:OnEnter()
+    GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+    GameTooltip:SetText(GREAT_VAULT_REWARDS, 1, 1, 1);
+
+    -- Get the number of unlocked slots
+    local unlockedSlots = 0;
+    local totalSlots = 9; -- Total of 9 slots across all categories
+
+    local activities = C_WeeklyRewards.GetActivities();
+    local activityTypes = {
+        [Enum.WeeklyRewardChestThresholdType.Activities] = "Mythic+",
+        [Enum.WeeklyRewardChestThresholdType.Raid] = "Raid",
+        [Enum.WeeklyRewardChestThresholdType.RankedPvP] = "Rated PvP",
+        [Enum.WeeklyRewardChestThresholdType.World] = "World",
+    }
+
+    for _, activityInfo in ipairs(activities) do
+        local categoryUnlocked = 0;
+        for _, reward in ipairs(activityInfo.rewards) do
+            if reward.type == Enum.CachedRewardType.Item then
+                categoryUnlocked = categoryUnlocked + 1;
+                unlockedSlots = unlockedSlots + 1;
+            end
+        end
+
+        local activityName = activityTypes[activityInfo.type] or "Unknown"
+        GameTooltip:AddLine(string.format("%s: %d/3 (%d/%d)", activityName, categoryUnlocked, activityInfo.progress, activityInfo.threshold), 1, 1, 1);
+    end
+
+    -- Add unlocked slots information
+    GameTooltip:AddLine(" ");
+    GameTooltip:AddLine(string.format("Total Unlocked Slots: %d/%d", unlockedSlots, totalSlots), 1, 0.82, 0);
+
+    -- Add instructions
+    GameTooltip:AddLine(" ");
+    GameTooltip:AddLine("Click to open the Great Vault", 0.7, 0.7, 0.7);
+
+    GameTooltip:Show();
+end
+
+local function InitializeGreatVaultMicroButton()
+    local parentFrame = MicroMenuContainer or UIParent
+    local GreatVaultMicroButton = CreateFrame("Button", "GreatVaultMicroButton", parentFrame, "MainMenuBarMicroButton");
+    Mixin(GreatVaultMicroButton, GreatVaultMicroButtonMixin);
+    GreatVaultMicroButton:OnLoad();
+
+    -- Insert GreatVaultMicroButton into the MICRO_BUTTONS table
+    local achievementIndex = tIndexOf(MICRO_BUTTONS, "AchievementMicroButton");
+    if achievementIndex then
+        table.insert(MICRO_BUTTONS, achievementIndex, "GreatVaultMicroButton");
+    end
+
+    -- Ensure the button is properly initialized
+    if parentFrame then
+        GreatVaultMicroButton:SetFrameLevel(parentFrame:GetFrameLevel() + 1);
+    end
+    GreatVaultMicroButton:EnableMouse(true);
+    GreatVaultMicroButton:Show();
+
+    return GreatVaultMicroButton
+end
+
+-- Initialize the Great Vault button
+local GreatVaultMicroButton = InitializeGreatVaultMicroButton()
+
+-- Update the UpdateMicroButtons hook to include our new button
+hooksecurefunc("UpdateMicroButtons", function()
+    if FriendsMicroButton then
+        FriendsMicroButton:UpdateMicroButton();
+    end
+    if GreatVaultMicroButton then
+        GreatVaultMicroButton:UpdateMicroButton();
+    end
+end);

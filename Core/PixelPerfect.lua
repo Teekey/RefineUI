@@ -48,20 +48,6 @@ for _, fontType in ipairs(fontTypes) do
 end
 
 ----------------------------------------------------------------------------------------
---	UIParent SETUP
-----------------------------------------------------------------------------------------
--- UIParent = CreateFrame("Frame", "RefineUIParent", UIParent)
--- UIParent:SetFrameLevel(UIParent:GetFrameLevel())
--- UIParent:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", 0, 0)
--- UIParent:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", 0, 0)
-
--- local function CalculatePixelPerfectScale()
---     local physicalWidth, physicalHeight = GetPhysicalScreenSize()
---     return 768 / physicalHeight
--- end
-
--- UIParent:SetScale(CalculatePixelPerfectScale())
-----------------------------------------------------------------------------------------
 --	PIXEL PERFECT FUNCTIONS
 ----------------------------------------------------------------------------------------
 function R.PixelPerfect(x)
